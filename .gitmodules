@@ -1,4 +1,0 @@
-[submodule "cuelib"]
-	path = cuelib
-	url = https://github.com/RomanHargrave/cuelib.git
-	ignore = untracked
