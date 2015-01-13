@@ -1,3 +1,6 @@
+CUE Composer [![Build Status](https://travis-ci.org/RomanHargrave/CUEComposer.svg?branch=master)](https://travis-ci.org/RomanHargrave/CUEComposer)
+============
+
 CUE Composer is a tool for working with CUESheets, the genesis of which was sparked by the lack of such software that was
 free, lest compatible with Linux.
 
