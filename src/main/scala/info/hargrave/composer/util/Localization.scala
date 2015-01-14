@@ -4,6 +4,8 @@ import info.hargrave.composer.util
 import org.streum.configrity._
 import org.streum.configrity.io.FlatFormat
 
+import scala.io.Source
+
 /**
  * Trait that can be mixed in where i18n resources are needed.
  * All that this trait provides is an implicit converter for StringContext that provides extended string
@@ -24,7 +26,7 @@ trait Localization {
      * @param context StringContext object passed by the runtime during implicit conversion
      */
     implicit class TranslatableStringContext (val context: StringContext) {
-        def t(args: Any*): String = Localization.translate(context.s(args))
+        def t(args: Any*): String = Localization.translate(context.s(args:_*))
     }
 }
 
@@ -46,7 +48,8 @@ object Localization {
                                             case str:Some[String] => str.get
                                             case None => "en_US"
                                         }
-    private val localeConfiguration =   Configuration.load(s"locale/$localeName.cfg", FlatFormat)
+    private val localeConfiguration =
+        Configuration.load(Source.fromInputStream(getClass.getResourceAsStream(s"/locale/$localeName.cfg")), FlatFormat)
 
     /**
      * Convert the translation name in to the appropriate localized string.
