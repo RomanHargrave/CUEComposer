@@ -1,6 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'scala'
 
+apply from: 'gradle/javafx.plugin'
+
 sourceCompatibility = 1.7
 version = '1.0'
 
@@ -21,11 +23,14 @@ repositories {
 }
 
 dependencies {
-    compile     group: 'org.scala-lang',    name: 'scala-library',  version: '2.11.2'
-    compile     group: 'org.scalafx',       name: 'scalafx_2.11',   version: '2.2.67-R10'
-    compile     group: 'org.slf4j',         name: 'slf4j-api',      version: '1.7.5'
+    compile     group: 'org.scala-lang',    name: 'scala-library',          version: '2.11.2'
+    compile     group: 'org.scalafx',       name: 'scalafx_2.11',           version: '2.2.67-R10'
+    compile     group: 'org.slf4j',         name: 'slf4j-api',              version: '1.7.5'
+    compile     group: 'org.streum',        name: 'configrity-core_2.10',   version: '1.0.0'
 
     compile     project(':cuelib')
+
+
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
@@ -33,4 +38,17 @@ dependencies {
 fatJarPrepareFiles {
     exclude 'rootdoc.txt'
     exclude 'library.properties'
+}
+
+javafx {
+    appID       'CUEComposer'
+    appName     'CUE Composer'
+    mainClass   'info.hargrave.composer.CUEComposer'
+
+    category    = 'Audio'
+    copyright   = 'Copyleft © 2014 Roman Hargrave'
+    description = 'Tool to manipulate CUE files'
+    licenseType = 'GPLv3.0'
+    menu        = true
+    shortcut    = true
 }
