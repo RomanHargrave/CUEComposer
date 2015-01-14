@@ -23,10 +23,11 @@ repositories {
 }
 
 dependencies {
-    compile     group: 'org.scala-lang',    name: 'scala-library',          version: '2.11.2'
-    compile     group: 'org.scalafx',       name: 'scalafx_2.11',           version: '2.2.67-R10'
-    compile     group: 'org.slf4j',         name: 'slf4j-api',              version: '1.7.5'
-    compile     group: 'org.streum',        name: 'configrity-core_2.10',   version: '1.0.0'
+    compile     group: 'org.scala-lang',            name: 'scala-library',                  version: '2.11.2'
+    compile     group: 'org.scala-lang.modules',    name: 'scala-parser-combinators_2.11',  version: '1.0.3'
+    compile     group: 'org.scalafx',               name: 'scalafx_2.11',                   version: '2.2.67-R10'
+    compile     group: 'org.slf4j',                 name: 'slf4j-api',                      version: '1.7.5'
+    compile     group: 'org.streum',                name: 'configrity-core_2.10',           version: '1.0.0'
 
     compile     project(':cuelib')
 
