@@ -54,7 +54,7 @@ object Localization {
      * @param name translation name
      * @return localized string, or if not available, the name
      */
-    def translate(name: String): String = localeConfiguration.get(name) match {
+    def translate(name: String): String = localeConfiguration.get[String](name) match {
         case text:Some[String] => text.get
         case None => name
     }
