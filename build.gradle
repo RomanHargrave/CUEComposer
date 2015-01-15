@@ -29,6 +29,8 @@ dependencies {
     compile     group: 'org.slf4j',                 name: 'slf4j-api',                      version: '1.7.5'
     compile     group: 'org.streum',                name: 'configrity-core_2.10',           version: '1.0.0'
 
+    compile     files('lib/javafx-dialogs/javafx-dialogs-0.0.4.jar')
+
     compile     project(':cuelib')
 
 
