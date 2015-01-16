@@ -4,6 +4,8 @@ import javafx.scene.control.Dialogs
 import javafx.scene.control.Dialogs.DialogResponse
 import javafx.{stage => jfxs}
 
+import org.slf4j.LoggerFactory
+
 import scalafx.application.JFXApp
 import scalafx.stage.Stage
 
@@ -11,6 +13,11 @@ import scalafx.stage.Stage
  * The root package for CUEComposer
  */
 package object composer {
+
+    /**
+     * Universal logger
+     */
+    implicit val logger = LoggerFactory.getLogger("info.hargrave.composer")
 
     /**
     * Allow easy access to the active stage without boilerplate.
