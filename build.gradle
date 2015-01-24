@@ -31,6 +31,11 @@ dependencies {
 
     compile     files('lib/javafx-dialogs/javafx-dialogs-0.0.4.jar')
 
+    /*
+     * Add SFX2 with menu-dev additions until PR #177 gets accepted upstream and published to maven.
+     */
+    compile     files('lib/scalafx_2.10-2.2.67-R11-SNAPSHOT.jar')
+
     compile     project(':cuelib')
 
 
