@@ -4,7 +4,6 @@ import java.io.File
 import javafx.scene.control.Dialogs
 import javafx.scene.control.Dialogs.DialogResponse
 import javafx.stage.Stage
-import javafx.{stage => jfxs}
 
 import info.hargrave.composer.ui.PromptInterface.{PromptResponse, PromptType}
 import info.hargrave.composer.util.Localization
@@ -17,7 +16,7 @@ import scalafx.stage.FileChooser.ExtensionFilter
  * [[javafx.scene.control.Dialogs]] is a provided by a third-party dialog toolkit for JavaFX 2.0 that aims to mimic
  * the Dialog functionality provided in JavaFX 8.
  */
-object FXPromptInterface extends Any with Localization {
+object FXPromptInterface extends AnyRef with Localization {
 
     implicit def dialogResponse2PromptResponse(response: DialogResponse): PromptResponse = response match {
         case DialogResponse.OK      => PromptResponse.ACKNOWLEDGE
