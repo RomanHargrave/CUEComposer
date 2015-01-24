@@ -2,8 +2,8 @@ package info.hargrave
 
 import javafx.scene.control.Dialogs
 import javafx.scene.control.Dialogs.DialogResponse
-import javafx.{stage => jfxs}
 
+import info.hargrave.composer.util.Localization
 import org.slf4j.LoggerFactory
 
 import scalafx.application.JFXApp
@@ -12,7 +12,7 @@ import scalafx.stage.Stage
 /**
  * The root package for CUEComposer
  */
-package object composer {
+package object composer extends AnyRef with Localization {
 
     /**
      * Universal logger
