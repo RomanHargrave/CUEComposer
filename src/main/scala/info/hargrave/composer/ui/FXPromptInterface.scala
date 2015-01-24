@@ -1,11 +1,16 @@
 package info.hargrave.composer.ui
 
+import java.io.File
+import javafx.scene.control.Dialogs
 import javafx.scene.control.Dialogs.DialogResponse
 import javafx.stage.Stage
+import javafx.{stage => jfxs}
 
 import info.hargrave.composer.ui.PromptInterface.{PromptResponse, PromptType}
 import info.hargrave.composer.util.Localization
-import javafx.scene.control.Dialogs
+
+import scalafx.stage.FileChooser
+import scalafx.stage.FileChooser.ExtensionFilter
 
 /**
  * Implements [[PromptInterface]] for JavaFX using [[javafx.scene.control.Dialogs]]
@@ -41,7 +46,7 @@ object FXPromptInterface extends Any with Localization {
 }
 final class FXPromptInterface extends PromptInterface {
     import info.hargrave.composer.stage
-    import FXPromptInterface._
+    import info.hargrave.composer.ui.FXPromptInterface._
 
     /**
      * Display a confirmation prompt, offering the user two-to-three options (Confirm, Deny, Cancel)
@@ -68,4 +73,47 @@ final class FXPromptInterface extends PromptInterface {
     override def displayNotificationPrompt(title: String, banner: String, body: String, promptType: PromptType): PromptResponse = {
         promptType(stage, body, banner, title)
     }
+
+    /**
+     * Display a file selection prompt, with optional title and filters.
+     *
+     * @param initialFile   initial file, None by default
+     * @param wTitle        window title, None by default
+     * @param filter        filters, None by default. format of map is {"description" -> Traversable("*.mask, mask.*, etc...")}
+     * @param multipleFiles whether to allow multiple files or not. this is false by default
+     * @return If no file is selected, None, otherwise, Some[Traversable(File...)]
+     */
+    override def displayFileSelectionPrompt(initialFile: Option[File] = None, wTitle: Option[String] = None,
+                                            filter: Option[Map[String, Seq[String]]] = None, multipleFiles: Boolean = false): Option[Seq[File]] = {
+        import scala.collection.JavaConversions.asJavaCollection
+
+        val chooser = new FileChooser {
+
+            if(initialFile.isDefined) {
+                initialDirectory = initialFile.get.getParentFile
+                if(initialFile.get.isFile)
+                    initialFileName = initialFile.get.getName
+            }
+
+            if(wTitle.isDefined) {
+                title = wTitle.get
+            }
+
+            if(filter.isDefined) {
+                val mappedFilters = filter.get.map { case(description, extensions) => new ExtensionFilter(description, extensions).delegate }
+                extensionFilters.setAll(mappedFilters)
+            }
+        }
+
+        val result = multipleFiles match {
+            case true   =>
+                chooser.showOpenMultipleDialog(null)
+            case false  =>
+                val selected = chooser.showOpenDialog(null)
+                if(selected == null) Seq(selected) else null
+        }
+
+        Option(result)
+    }
+
 }

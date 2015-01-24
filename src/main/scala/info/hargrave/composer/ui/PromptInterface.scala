@@ -1,5 +1,7 @@
 package info.hargrave.composer.ui
 
+import java.io.File
+
 import info.hargrave.composer.ui.PromptInterface.{PromptResponse, PromptType}
 
 /**
@@ -29,6 +31,17 @@ trait PromptInterface {
      */
     def displayNotificationPrompt(title: String, banner: String, body: String, promptType: PromptType = PromptType.INFO): PromptResponse
 
+    /**
+     * Display a file selection prompt, with optional title and filters.
+     *
+     * @param initialFile   initial file, None by default
+     * @param title         window title, None by default
+     * @param filter        filters, None by default. format of map is {"description" -> Traversable("*.mask, mask.*, etc...")}
+     * @param multipleFiles whether to allow multiple files or not. this is false by default
+     * @return If no file is selected, None, otherwise, Some[Traversable(File...)]
+     */
+    def displayFileSelectionPrompt(initialFile: Option[File] = None, title: Option[String] = None,
+                                   filter: Option[Map[String, Seq[String]]] = None, multipleFiles: Boolean = false): Option[Seq[File]]
 }
 
 object PromptInterface {
