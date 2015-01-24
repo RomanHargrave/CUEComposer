@@ -3,8 +3,9 @@ package info.hargrave
 import javafx.scene.control.Dialogs
 import javafx.scene.control.Dialogs.DialogResponse
 
+import info.hargrave.composer.ui.{FXPromptInterface, PromptInterface}
 import info.hargrave.composer.util.Localization
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import scalafx.application.JFXApp
 import scalafx.stage.Stage
@@ -15,9 +16,14 @@ import scalafx.stage.Stage
 package object composer extends AnyRef with Localization {
 
     /**
-     * Universal logger
+     * Provides the default logger to use
      */
-    implicit val logger = LoggerFactory.getLogger("info.hargrave.composer")
+    implicit val logger: Logger = LoggerFactory.getLogger("info.hargrave.composer")
+
+    /**
+     * Provides the implementation of [[PromptInterface]] to user
+     */
+    implicit val promptInterface: PromptInterface = new FXPromptInterface
 
     /**
     * Allow easy access to the active stage without boilerplate.
