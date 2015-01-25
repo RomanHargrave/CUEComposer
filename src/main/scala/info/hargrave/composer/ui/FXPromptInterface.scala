@@ -105,14 +105,19 @@ final class FXPromptInterface extends PromptInterface {
             }
         }
 
-        val result = Option( multipleFiles match {
+        val dialogResponse = multipleFiles match {
             case true   =>
-                chooser.showOpenMultipleDialog(null)
+                try {
+                    chooser.showOpenMultipleDialog(null)
+                } catch {
+                    case _:NullPointerException => null // See scalafx/scalafx issue #178 on github
+                }
             case false  =>
                 val selected = chooser.showOpenDialog(null)
                 if(selected == null) Seq(selected) else null
-        } )
+        }
 
+        val result = Option(dialogResponse)
 
         /*
          * This is a (hacky?) solution that allows us to continue to prompt the user for a file selection if the caller
