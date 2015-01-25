@@ -1,7 +1,7 @@
 package info.hargrave
 
 import info.hargrave.composer.ui.{FXPromptInterface, PromptInterface}
-import info.hargrave.composer.util.{PropertyStrings, Localization}
+import info.hargrave.composer.util.{RegexStrings, PropertyStrings, Localization}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scalafx.application.JFXApp
@@ -10,7 +10,7 @@ import scalafx.stage.Stage
 /**
  * The root package for CUEComposer
  */
-package object composer extends AnyRef with Localization with PropertyStrings {
+package object composer extends AnyRef with Localization with PropertyStrings with RegexStrings {
 
     /**
      * Provides the default logger to use
