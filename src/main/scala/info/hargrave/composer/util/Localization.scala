@@ -1,9 +1,11 @@
 package info.hargrave.composer.util
 
 import info.hargrave.composer.util
+import info.hargrave.composer.util.Localization.TString
 import org.streum.configrity._
 import org.streum.configrity.io.FlatFormat
 
+import scala.collection.immutable.StringLike
 import scala.io.Source
 
 /**
@@ -27,7 +29,17 @@ trait Localization {
      */
     implicit class TranslatableStringContext (val context: StringContext) {
         def t(args: Any*): String = Localization.translate(context.s(args:_*))
+        def tf(args: Any*): TString = new TString(context.s(args:_*))
     }
+
+    /**
+     * Turns a TString in to a String, because the compiler/vm does not seem to comprehend what should be de-facto
+     * stringification
+     *
+     * @param tstr t-string
+     * @return string
+     */
+    implicit def tString2String(tstr: TString): String = tstr.toString
 }
 
 /**
@@ -60,5 +72,14 @@ object Localization {
     def translate(name: String): String = localeConfiguration.get[String](name) match {
         case text:Some[String] => text.get
         case None => name
+    }
+
+    final class TString(str: String) {
+
+        def apply(values: Any*): String = {
+            translate(str).format(values)
+        }
+
+        override def toString: String = translate(str)
     }
 }
