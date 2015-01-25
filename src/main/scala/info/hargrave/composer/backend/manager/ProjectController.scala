@@ -183,7 +183,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
         val projectInstance = ProjectController.ProjectExtensionAssocations(file.getName.split("\\.").last.toLowerCase)()
         val inputStream     = new FileInputStream(file)
         logger.debug("instantiated project ({}) based on filetype", projectInstance)
-        logger.trace("opened input stream {} on file {}", inputStream, file)
+        logger.trace("opened input stream {} on file {}", Seq(inputStream, file):_*)
 
         try projectInstance.readProject(inputStream)
         finally inputStream.close()
@@ -230,7 +230,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
      * @param project project
      */
     def addProject(project: Project): Unit = {
-        logger.debug("adding project {}, storage: {}", project, project.storageLocation)
+        logger.debug("adding project {}, storage: {}", Seq(project, project.storageLocation):_*)
         interface.addProject(project)
     }
 }
