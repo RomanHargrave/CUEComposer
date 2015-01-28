@@ -1,7 +1,10 @@
 package info.hargrave.composer
 
-import info.hargrave.composer.backend.manager.ProjectController
+import java.io.IOException
+
+import info.hargrave.composer.backend.manager.{Project, ProjectController}
 import info.hargrave.composer.backend.manager.ui.ProjectUserInterface
+import info.hargrave.composer.ui.PromptInterface.PromptType
 import info.hargrave.composer.ui.{FXPromptInterface, PromptInterface, TabbedProjectUI}
 import info.hargrave.composer.util.Localization
 
@@ -31,8 +34,14 @@ final class CUEComposer extends JFXApp with Localization with EventIncludes {
                             id = "menu.file.open"
                             onAction = () => controller.openProjectsInteractively()
                         },
-                        new MenuItem(t"ui.menu.file.save")  { id = "menu.file.save" },
-                        new MenuItem(t"ui.menu.file.saveas"){ id = "menu.file.save_as" },
+                        new MenuItem(t"ui.menu.file.save") {
+                            id = "menu.file.save"
+                            onAction = () => saveActiveProject()
+                        },
+                        new MenuItem(t"ui.menu.file.saveas"){
+                            id = "menu.file.save_as"
+                            onAction = () => saveActiveProject(newFile = true)
+                        },
                         new SeparatorMenuItem,
                         new MenuItem(t"ui.menu.file.exit")  {
                             id = "menu.file.exit"
@@ -77,6 +86,20 @@ final class CUEComposer extends JFXApp with Localization with EventIncludes {
             content = rootPane
         }
 
+    }
+
+    def saveActiveProject(newFile: Boolean = false): Unit = controller.activeProject match {
+        case someProject: Some[Project] =>
+            try controller.saveProject(someProject.get, newFile)
+            catch {
+                case e: IOException =>
+                    logger.error(t"notification.error_while_saving.banner", e)
+                    promptInterface.displayNotificationPrompt(t"notification.error_while_saving", t"notification.error_while_saving.banner",
+                                                              tf"notification.error_while_saving.body"(e.getLocalizedMessage), PromptType.ERROR)
+            }
+        case None   =>
+            promptInterface.displayNotificationPrompt(t"notification.no_project_open", t"notification.no_project_open.banner",
+                                                      t"notification.no_project_open.body", PromptType.ERROR)
     }
 
     override def stopApp(): Unit = {
