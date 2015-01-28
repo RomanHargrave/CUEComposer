@@ -107,11 +107,7 @@ final class FXPromptInterface extends PromptInterface {
 
         val dialogResponse = multipleFiles match {
             case true   =>
-                try {
-                    chooser.showOpenMultipleDialog(null)
-                } catch {
-                    case _:NullPointerException => null // See scalafx/scalafx issue #178 on github
-                }
+                chooser.showOpenMultipleDialog(null)
             case false  =>
                 val selected = chooser.showOpenDialog(null)
                 if(selected == null) Seq(selected) else null
@@ -119,18 +115,15 @@ final class FXPromptInterface extends PromptInterface {
 
         val result = Option(dialogResponse)
 
-        /*
-         * This is a (hacky?) solution that allows us to continue to prompt the user for a file selection if the caller
-         * does not like it. This is unfortunately the lesser of available evils as JavaFX 2.2 does not provide any callbacks
-         * for interacting with the user while the chooser is live. This is sort-of/kind-of partially the fault of how JavaFX
-         * handles file choosers. (See FileChooser source)
-         */
-        validator(result) match {
-            case true   => result
-            case false  =>
-                displayNotificationPrompt(t"dialog.file.invalid_selection", t"dialog.file.invalid_selection.banner",
-                                          t"dialog.file.invalid_selection.body", PromptType.ERROR)
-                displayFileSelectionPrompt(initialFile, wTitle, filter, multipleFiles, validator)
+        result match {
+            case someSeq: Some[Seq[File]] => validator(someSeq) match {
+                case true   => result
+                case false  =>
+                    displayNotificationPrompt(t"dialog.file.invalid_selection", t"dialog.file.invalid_selection.banner",
+                                              t"dialog.file.invalid_selection.body", PromptType.ERROR)
+                    displayFileSelectionPrompt(initialFile, wTitle, filter, multipleFiles, validator)
+            }
+            case None => None
         }
     }
 
