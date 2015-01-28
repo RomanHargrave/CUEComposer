@@ -8,8 +8,6 @@ import java.io.{InputStream, OutputStream}
  */
 abstract class Project {
 
-    private var controllerRef: Option[ProjectController] = None
-
     /**
      * Name of the project
      *
@@ -40,8 +38,4 @@ abstract class Project {
      */
     def isModified: Boolean
 
-    protected def onClose(): Unit = {}
-
-    private[manager] def controller_=(projectController: Option[ProjectController]): Unit = controllerRef = projectController
-    def controller = controllerRef
 }

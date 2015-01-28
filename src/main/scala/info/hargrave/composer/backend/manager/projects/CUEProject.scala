@@ -40,5 +40,4 @@ class CUEProject extends Project {
      */
     override def writeProject(output: OutputStream): Unit = ???
 
-    override def interfaceComponent: Node = ???
 }
