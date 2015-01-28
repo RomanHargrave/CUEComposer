@@ -47,6 +47,10 @@ dependencies {
 
 processResources {
     exclude 'avsl.conf'
+    exclude 'GPL_HEADER.txt'
+    from("${project.projectDir.absolutePath}/LICENSE") {
+        into '/'
+    }
     rename 'avsl_dist.conf', 'avsl.conf'
 }
 
@@ -66,4 +70,8 @@ javafx {
     licenseType = 'GPLv3.0'
     menu        = true
     shortcut    = true
+
+    bundleArguments {
+        licenseFile = 'LICENSE'
+    }
 }
