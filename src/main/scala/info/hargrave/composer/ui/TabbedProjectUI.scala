@@ -1,6 +1,7 @@
 package info.hargrave.composer.ui
 
 import info.hargrave.composer._
+import info.hargrave.composer.backend.manager.projects.CUEProject
 import info.hargrave.composer.ui.TabbedProjectUI.ProjectTab
 import info.hargrave.composer.util.Localization
 
@@ -84,7 +85,7 @@ object TabbedProjectUI {
                 None
         }
 
-        def projectTab: Option[Tab] = componentAccess.get(project)
+        def projectTab: Option[ProjectTab] = componentAccess.get(project)
     }
 
     /**
@@ -105,6 +106,6 @@ object TabbedProjectUI {
      * Provides factory-like associations that allow the lookup of a function to construct a project interface object if
      * provided with a project.
      */
-    val InterfaceComponentAssociations  = Map[Class[_<:Project], ((Project)=>_<:Node)]()
+    val InterfaceComponentAssociations  = Map[Class[_<:Project], ((Project)=>Node)](classOf[CUEProject] -> ((p: Project) => new CUEProjectUI(p)))
 
 }
