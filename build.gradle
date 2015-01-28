@@ -28,6 +28,10 @@ dependencies {
     compile     group: 'org.scalafx',               name: 'scalafx_2.11',                   version: '2.2.67-R10'
     compile     group: 'org.slf4j',                 name: 'slf4j-api',                      version: '1.7.5'
     compile     group: 'org.streum',                name: 'configrity-core_2.10',           version: '1.0.0'
+    compile    (group: 'org.clapper',               name: 'avsl_2.11',                      version: '1.0.2') {
+        exclude group: 'org.scala-lang'
+        exclude group: 'javax.mail'
+    }
 
     compile     files('lib/javafx-dialogs/javafx-dialogs-0.0.4.jar')
 
@@ -37,8 +41,6 @@ dependencies {
     compile     files('lib/scalafx_2.10-2.2.76-R12-SNAPSHOT.jar')
 
     compile     project(':cuelib')
-
-
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
