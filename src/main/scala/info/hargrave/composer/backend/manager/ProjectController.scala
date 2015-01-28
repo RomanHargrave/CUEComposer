@@ -16,23 +16,10 @@ import scala.collection.mutable.{Map => MutableMap}
 class ProjectController(implicit val interface: ProjectUserInterface,
                         implicit val prompts:   PromptInterface) extends AnyRef with Localization /* explicit import to fix IntelliJ compiler bug */ {
 
-    private val projectStorage = MutableMap[Project, File]()
-    implicit class ProjectDataAccess (project: Project) {
+    import ProjectController.ProjectDataAccess
 
-        def storageLocation: Option[File] = projectStorage.get(project)
+    private implicit val projectStorage = MutableMap[Project, File]()
 
-        def storageLocation_=(file: Option[File]): Option[File] = file match {
-            case someFile: Some[File] => projectStorage.put(project, file.get)
-            case None =>
-                projectStorage.remove(project)
-                None
-        }
-
-
-        def extensionFilter: Map[String, Seq[String]] =
-            ProjectController.ProjectExtensionFilters.getOrElse(project.getClass, Map(t"project.type.unknown" -> Seq("*")))
-
-    }
 
     /**
      * Get the active project from the interface
@@ -180,7 +167,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
      */
     @throws(classOf[NoSuchElementException])
     def createProjectFromFile(file: File): Project = {
-        val projectInstance = ProjectController.ProjectExtensionAssocations(file.getName.split("\\.").last.toLowerCase)()
+        val projectInstance = ProjectController.ProjectExtensionAssociations(file.getName.split("\\.").last.toLowerCase)()
         val inputStream     = new FileInputStream(file)
         logger.debug("instantiated project ({}) based on filetype", projectInstance)
         logger.trace("opened input stream {} on file {}", Seq(inputStream, file):_*)
@@ -212,15 +199,13 @@ class ProjectController(implicit val interface: ProjectUserInterface,
      */
     def openProjectsInteractively(): Seq[Project] = {
         prompts.displayFileSelectionPrompt(title = Some(t"dialog.open_files"), filter = Some(ProjectController.FatExtensionFilter),
-                                           multipleFiles = true, validator = fOpt => fOpt.get.forall(_.isFile) && fOpt.isDefined) match {
+                                           multipleFiles = true, validator = fOpt => fOpt.isDefined && fOpt.get.forall(_.isFile)) match {
             case someFiles: Some[Seq[File]] =>
                 val files       = someFiles.get
                 val projects    = files.map(createProjectFromFile)
                 projects.foreach(addProject)
                 projects
-            case None =>
-                logger.warn("The user failed to select a save file when prompted (somehow?)")
-                throw new IllegalStateException("Unreachable branch: None returned by file prompt with Some-only validator")
+            case None => Seq() // Dialog was closed
         }
     }
 
@@ -236,7 +221,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
 }
 object ProjectController {
 
-    val ProjectExtensionAssocations: Map[String, (()=>Project)] = Map("cue" -> (()=> new CUEProject))
+    val ProjectExtensionAssociations: Map[String, (()=>Project)] = Map("cue" -> (()=> new CUEProject))
     val ProjectExtensionFilters: Map[Class[_<:Project], Map[String, Seq[String]]] =
         Map(classOf[CUEProject ] -> Map(t"project.type.cue" -> Seq("*.cue")))
 
@@ -251,4 +236,21 @@ object ProjectController {
                                                                                               }
                                                                                 updatedFatMap
                                                                              }
+
+    implicit class ProjectDataAccess (project: Project)(implicit val locationMap: MutableMap[Project, File]) {
+
+        def storageLocation: Option[File] = locationMap.get(project)
+
+        def storageLocation_=(file: Option[File]): Option[File] = file match {
+            case someFile: Some[File] => locationMap.put(project, file.get)
+            case None =>
+                locationMap.remove(project)
+                None
+        }
+
+
+        def extensionFilter: Map[String, Seq[String]] =
+            ProjectController.ProjectExtensionFilters.getOrElse(project.getClass, Map(t"project.type.unknown" -> Seq("*")))
+
+    }
 }
