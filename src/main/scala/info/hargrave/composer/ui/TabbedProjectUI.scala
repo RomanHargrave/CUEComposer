@@ -106,6 +106,6 @@ object TabbedProjectUI {
      * Provides factory-like associations that allow the lookup of a function to construct a project interface object if
      * provided with a project.
      */
-    val InterfaceComponentAssociations  = Map[Class[_<:Project], ((Project)=>Node)](classOf[CUEProject] -> ((p: Project) => new CUEProjectUI(p)))
+    val InterfaceComponentAssociations  = Map[Class[_<:Project], ((Project)=>Node)](classOf[CUEProject] -> ((p: Project) => new CUEProjectUI(p.asInstanceOf[CUEProject])))
 
 }
