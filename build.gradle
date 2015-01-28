@@ -45,6 +45,11 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
+processResources {
+    exclude 'avsl.conf'
+    rename 'avsl_dist.conf', 'avsl.conf'
+}
+
 fatJarPrepareFiles {
     exclude 'rootdoc.txt'
     exclude 'library.properties'
