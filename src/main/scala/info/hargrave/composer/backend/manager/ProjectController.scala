@@ -128,8 +128,8 @@ class ProjectController(implicit val interface: ProjectUserInterface,
 
         def askForLocation(): File = {
             prompts.displayFileSelectionPrompt(initialFile = Some(storageLocation), title = Some(t"dialog.save_file"),
-                                               filter = Some(project.extensionFilter),
-                                               validator = fOpt => fOpt.isDefined && fOpt.get(0).isFile) match {
+                                               filter = Some(project.extensionFilter), saveFile = true,
+                                               validator = fOpt => fOpt.isDefined && !fOpt.get(0).isDirectory) match {
                 case files: Some[Seq[File]] => files.get(0)
                 case None =>
                     logger.warn("The user failed to select a save file when prompted (somehow?)")

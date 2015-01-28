@@ -5,6 +5,7 @@ import javafx.scene.control.Dialogs
 import javafx.scene.control.Dialogs.DialogResponse
 import javafx.stage.Stage
 
+import info.hargrave.composer._
 import info.hargrave.composer.ui.PromptInterface.{PromptResponse, PromptType}
 import info.hargrave.composer.util.Localization
 
@@ -84,7 +85,7 @@ final class FXPromptInterface extends PromptInterface {
      */
     override def displayFileSelectionPrompt(initialFile: Option[File] = None, wTitle: Option[String] = None,
                                             filter: Option[Map[String, Seq[String]]] = None, multipleFiles: Boolean = false,
-                                            validator: (Option[Seq[File]] => Boolean) = _ => true): Option[Seq[File]] = {
+                                            validator: (Option[Seq[File]] => Boolean) = _ => true, saveFile: Boolean = false): Option[Seq[File]] = {
         import scala.collection.JavaConversions.asJavaCollection
 
         val chooser = new FileChooser {
@@ -106,12 +107,17 @@ final class FXPromptInterface extends PromptInterface {
         }
 
         val dialogResponse = multipleFiles match {
+            case _ if saveFile =>
+                val selected = chooser.showSaveDialog(null)
+                if(selected != null) Seq(selected) else null
             case true   =>
                 chooser.showOpenMultipleDialog(null)
             case false  =>
                 val selected = chooser.showOpenDialog(null)
                 if(selected == null) Seq(selected) else null
         }
+
+        logger.debug("user selected {} at file prompt", dialogResponse)
 
         val result = Option(dialogResponse)
 

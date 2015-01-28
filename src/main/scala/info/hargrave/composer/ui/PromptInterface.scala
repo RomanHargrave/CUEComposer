@@ -39,12 +39,12 @@ trait PromptInterface {
      * @param filter        filters, None by default. format of map is {"description" -> Traversable("*.mask, mask.*, etc...")}
      * @param multipleFiles whether to allow multiple files or not. this is false by default
      * @param validator     function that may be supplied to validate the file selection, defaults to a function that will always return true
-     *
+     * @param saveFile      whether the prompt is to be used for save file selection or not
      * @return If no file is selected, None, otherwise, Some[Traversable(File...)]
      */
     def displayFileSelectionPrompt(initialFile: Option[File] = None, title: Option[String] = None,
                                    filter: Option[Map[String, Seq[String]]] = None, multipleFiles: Boolean = false,
-                                   validator: (Option[Seq[File]] => Boolean) = _ => true): Option[Seq[File]]
+                                   validator: (Option[Seq[File]] => Boolean) = _ => true, saveFile: Boolean = true): Option[Seq[File]]
 }
 
 object PromptInterface {
