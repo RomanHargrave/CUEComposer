@@ -2,8 +2,6 @@ package info.hargrave.composer.backend.manager
 
 import java.io.{InputStream, OutputStream}
 
-import scalafx.scene.Node
-
 /**
  * Defines the idea of a project, something that is open and being worked with by the user.
  * At the most basic level, a project has a title and can be saved to the disk.
@@ -41,8 +39,6 @@ abstract class Project {
      * @return true if the project has been modified since it was last saved successfully, or if it is new.
      */
     def isModified: Boolean
-
-    def interfaceComponent: Node
 
     protected def onClose(): Unit = {}
 
