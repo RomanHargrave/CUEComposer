@@ -14,7 +14,8 @@ import scalafx.event.EventIncludes
 import scalafx.scene.Node
 import scalafx.scene.control.TabPane.TabClosingPolicy
 import scalafx.scene.control.{Tab, TabPane}
-import scalafx.scene.control.ControlIncludes.jfxTab2sfx
+
+import javafx.scene.{control => jfxsc}
 
 /**
  * Provides a JavaFX frontend for the ProjectController. As such, it allows for the interface to access the selection model
@@ -23,7 +24,8 @@ import scalafx.scene.control.ControlIncludes.jfxTab2sfx
  */
 class TabbedProjectUI extends TabPane with ProjectUserInterface with Localization {
 
-    import TabbedProjectUI.ProjectTabAccess
+    import TabbedProjectUI.{ProjectTabAccess, jfxTab2sfx}
+
 
     // FX Node configuration --------------------------------------
 
@@ -45,17 +47,17 @@ class TabbedProjectUI extends TabPane with ProjectUserInterface with Localizatio
     override def addProject(project: Project): Unit = project.projectTab match {
         case _:Some[ProjectTab]     => throw new IllegalArgumentException(t"error.project.already_open")
         case None                   =>
+            logger.debug("Adding {} to tab interface", project)
             project.projectTab = Some(new ProjectTab(project))
+            logger.trace("ProjectTab {} corresponds to project", project.projectTab.get)
             tabs.add(project.projectTab.get)
     }
 
     override def activeProject: Option[Project] = Option(jfxTab2sfx(selectionModel.value.getSelectedItem)) match {
-        case sel: Some[Tab] => sel.get match {
-            case pr: ProjectTab => Some(pr.project)
-            case npr:Tab        =>
-                logger.warn("The active tab ({}) is a not compatible with the project controller", npr)
-                None
-        }
+        case pr: Some[Tab]  if pr.get.isInstanceOf[ProjectTab] => Some(pr.get.asInstanceOf[ProjectTab].project)
+        case npr: Some[Tab]     =>
+            logger.warn("The active tab ({}) is a not compatible with the project controller", npr)
+            None
         case None               => None
     }
 
@@ -96,11 +98,28 @@ object TabbedProjectUI {
      */
     final class ProjectTab(val project: Project) extends Tab with EventIncludes {
 
+        delegate.getProperties.put(classOf[ProjectTab], this)
+
         val projectInterfaceComponent = InterfaceComponentAssociations(project.getClass)(project)
 
         content = projectInterfaceComponent
         text    = project.title
+
+        override def toString(): String = s"ProjectTab(delegate=$delegate, project=$project)"
+
+        override def userData_=(x: AnyRef): Unit = {}
     }
+
+
+    implicit def jfxTab2sfx(jfx: jfxsc.Tab): Tab = {
+        logger.trace("implicitly comprehending tab type from JFX tab {} where magic data is {}", Seq(jfx, jfx.getProperties.get(classOf[ProjectTab])):_*)
+        if(jfx != null) Option(jfx.getProperties.get(classOf[ProjectTab])) match {
+            case someData: Some[AnyRef] if someData.get.isInstanceOf[ProjectTab] => someData.get.asInstanceOf[ProjectTab]
+            case _ =>
+                new Tab(jfx)
+        } else null
+    }
+
 
     /**
      * Provides factory-like associations that allow the lookup of a function to construct a project interface object if
@@ -109,3 +128,4 @@ object TabbedProjectUI {
     val InterfaceComponentAssociations  = Map[Class[_<:Project], ((Project)=>Node)](classOf[CUEProject] -> ((p: Project) => new CUEProjectUI(p.asInstanceOf[CUEProject])))
 
 }
+
