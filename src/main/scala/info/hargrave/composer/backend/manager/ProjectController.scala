@@ -138,13 +138,13 @@ class ProjectController(implicit val interface: ProjectUserInterface,
         }
 
         def writeProjectToFile(file: File): Unit = {
-            logger.trace("Blindly attempting to create file at ${file.getAbsolutePath}")
+            logger.trace(s"Blindly attempting to create file at ${file.getAbsolutePath}")
             file.createNewFile()
 
-            logger.debug("Opening an output stream to ${file.getAbsolutePath}")
+            logger.debug(s"Opening an output stream to ${file.getAbsolutePath}")
             val output = new FileOutputStream(file)
 
-            logger.trace("Calling project#writeProject on $output")
+            logger.trace(s"Calling project#writeProject on $output")
             try {
                 project.writeProject(output)
                 output.flush()
@@ -167,6 +167,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
      */
     @throws(classOf[NoSuchElementException])
     def createProjectFromFile(file: File): Project = {
+        logger.info(tf"log.opening_file"(file))
         val projectInstance = ProjectController.ProjectExtensionAssociations(file.getName.split("\\.").last.toLowerCase)()
         val inputStream     = new FileInputStream(file)
         logger.debug(s"instantiated project ($projectInstance) based on filetype")
