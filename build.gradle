@@ -29,9 +29,9 @@ dependencies {
     compile     group: 'org.slf4j',                 name: 'slf4j-api',                      version: '1.7.5'
     compile     group: 'org.streum',                name: 'configrity-core_2.10',           version: '1.0.0'
     compile    (group: 'org.clapper',               name: 'avsl_2.11',                      version: '1.0.2') {
-        exclude group: 'org.scala-lang'
         exclude group: 'javax.mail'
     }
+    compile     group: 'org.clapper',               name: 'grizzled-slf4j_2.11',            version: '1.0.2'
 
     compile     files('lib/javafx-dialogs/javafx-dialogs-0.0.4.jar')
 
@@ -70,8 +70,4 @@ javafx {
     licenseType = 'GPLv3.0'
     menu        = true
     shortcut    = true
-
-    bundleArguments {
-        licenseFile = 'LICENSE'
-    }
 }
