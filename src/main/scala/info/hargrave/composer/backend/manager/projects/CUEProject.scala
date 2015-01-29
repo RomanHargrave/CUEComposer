@@ -18,6 +18,12 @@ class CUEProject extends Project {
     private var underlyingCueSheet: Option[CueSheet] = None
 
     /**
+     * Access the underlying cue sheet object
+     * @return underlying cue sheet
+     */
+    final def cueSheet: Option[CueSheet] = underlyingCueSheet
+
+    /**
      * Read the project from an input stream
      *
      * @param input input stream
