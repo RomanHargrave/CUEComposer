@@ -8,7 +8,7 @@ import scalafx.scene.control.ListCell
 
 abstract class CustomListCell[T](override val delegate: JFXCellUpdateDelegate[T] = new JFXCellUpdateDelegate[T]) extends ListCell[T]() {
 
-    delegate.updateFunction = Some(updateItem(_, _))
+    delegate.updateFunction = Some({(item: T, empty: Boolean) => updateItem(item, empty)})
 
     def updateItem(item: T, empty: Boolean): Unit
 }
@@ -24,7 +24,7 @@ object CustomListCell {
         override def updateItem(item: T, empty: Boolean): Unit = {
             super.updateItem(item, empty)
             updateFunction match {
-                case someFunction: Some[((T, Boolean) => _)] => someFunction.get.apply(item, empty)
+                case Some(action) => action(item, empty)
                 case None => // Do nothing
             }
         }
