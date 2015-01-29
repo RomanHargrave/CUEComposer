@@ -117,7 +117,7 @@ final class FXPromptInterface extends PromptInterface {
                 if(selected == null) Seq(selected) else null
         }
 
-        logger.debug("user selected {} at file prompt", dialogResponse)
+        logger.debug(s"user selected $dialogResponse at file prompt")
 
         val result = Option(dialogResponse)
 

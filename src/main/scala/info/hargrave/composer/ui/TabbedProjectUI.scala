@@ -47,23 +47,23 @@ class TabbedProjectUI extends TabPane with ProjectUserInterface with Localizatio
     override def addProject(project: Project): Unit = project.projectTab match {
         case _:Some[ProjectTab]     => throw new IllegalArgumentException(t"error.project.already_open")
         case None                   =>
-            logger.debug("Adding {} to tab interface", project)
+            logger.debug(s"Adding $project to tab interface")
             project.projectTab = Some(new ProjectTab(project))
-            logger.trace("ProjectTab {} corresponds to project", project.projectTab.get)
+            logger.trace(s"ProjectTab ${project.projectTab.get} corresponds to project")
             tabs.add(project.projectTab.get)
     }
 
     override def activeProject: Option[Project] = Option(jfxTab2sfx(selectionModel.value.getSelectedItem)) match {
         case pr: Some[Tab]  if pr.get.isInstanceOf[ProjectTab] => Some(pr.get.asInstanceOf[ProjectTab].project)
         case npr: Some[Tab]     =>
-            logger.warn("The active tab ({}) is a not compatible with the project controller", npr)
+            logger.warn(s"The active tab ({$npr) is a not compatible with the project controller")
             None
         case None               => None
     }
 
     override def switchTo(project: Project): Unit = project.projectTab match {
         case tab: Some[ProjectTab]  =>
-            logger.debug("switching foregrounded project to {}", tab.get)
+            logger.debug(s"switching foregrounded project to ${tab.get}")
             selectionModel.get.select(tab.get)
         case None                   => throw new NoSuchElementException(t"error.project.not_open")
     }
@@ -112,7 +112,6 @@ object TabbedProjectUI {
 
 
     implicit def jfxTab2sfx(jfx: jfxsc.Tab): Tab = {
-        logger.trace("implicitly comprehending tab type from JFX tab {} where magic data is {}", Seq(jfx, jfx.getProperties.get(classOf[ProjectTab])):_*)
         if(jfx != null) Option(jfx.getProperties.get(classOf[ProjectTab])) match {
             case someData: Some[AnyRef] if someData.get.isInstanceOf[ProjectTab] => someData.get.asInstanceOf[ProjectTab]
             case _ =>

@@ -2,8 +2,12 @@ package info.hargrave.composer.backend.manager.projects
 
 import java.io.{InputStream, OutputStream}
 
+import scala.collection.JavaConversions._
+
 import info.hargrave.composer.backend.manager.Project
-import jwbroek.cuelib.{CueSheetSerializer, CueSheet, CueParser}
+import info.hargrave.composer._
+
+import jwbroek.cuelib.{CueSheetSerializer, CueSheet, CueParser, Error => CuesheetError, Warning => CueSheetWarning, Message => CuesheetMessage}
 
 /**
  * Date: 1/25/15
@@ -20,6 +24,21 @@ class CUEProject extends Project {
      */
     final override def readProject(input: InputStream): Unit = {
         underlyingCueSheet = Some(CueParser.parse(input))
+        underlyingCueSheet match {
+            case someSheet: Some[CueSheet] =>
+                logger.debug(s"CUESheet parsed with ${someSheet.get.getMessages.length} messages")
+                someSheet.get.getMessages.foreach {
+                                                       case error: CuesheetError =>
+                                                           logger.error(tf"cuesheet.parse_error"(error.getMessage, error.getInput, error.getLineNumber))
+                                                       case warning: CueSheetWarning =>
+                                                           logger.warn(tf"cuesheet.parse_warning"(warning.getMessage, warning.getInput, warning.getLineNumber))
+                                                       case message: CuesheetMessage =>
+                                                           logger.info(tf"cuesheet.parse_message"(message.getMessage, message.getInput, message.getLineNumber))
+                                                   }
+            case None =>
+                logger.debug("CUESheet parser did not like the input stream!")
+                throw new IllegalArgumentException("Invalid CUE sheet.")
+        }
     }
 
     /**
@@ -47,5 +66,7 @@ class CUEProject extends Project {
             output.write(serializer.serializeCueSheet(someSheet.get).getBytes)
         case None                       => throw new IllegalStateException("No underlying CueSheet exists")
     }
+
+
 
 }

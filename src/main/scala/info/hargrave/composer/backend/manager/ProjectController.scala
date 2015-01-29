@@ -14,7 +14,7 @@ import scala.collection.mutable.{Map => MutableMap}
  * Manages a collection of projects, working with a TabPane
  */
 class ProjectController(implicit val interface: ProjectUserInterface,
-                        implicit val prompts:   PromptInterface) extends AnyRef with Localization /* explicit import to fix IntelliJ compiler bug */ {
+                        implicit val prompts:   PromptInterface) extends AnyRef with Localization /* explicit import to fix compiler bug */ {
 
     import ProjectController.ProjectDataAccess
 
@@ -35,7 +35,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
      * @param project project
      */
     def closeProject(project: Project): Unit = {
-        logger.info(t"log.project.close", project)
+        logger.info(tf"log.project.close"(project))
 
         prompts.displayConfirmationPrompt(t"dialog.save_project", t"dialog.save_project.banner",
                                           t"dialog.save_project.body", cancelable = true) match {
@@ -87,7 +87,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
      * @param promptForLocation     whether to prompt for the location to save the project to or not
      */
     def saveProject(project: Project, promptForLocation: Boolean = false): Unit = {
-        logger.info(t"log.project.saving", project)
+        logger.info(tf"log.project.saving"(project))
 
         val storageLocation = project.storageLocation match {
             case some: Some[File] => some.get
@@ -138,13 +138,13 @@ class ProjectController(implicit val interface: ProjectUserInterface,
         }
 
         def writeProjectToFile(file: File): Unit = {
-            logger.trace("Blindly attempting to create file at {}", file.getAbsolutePath)
+            logger.trace("Blindly attempting to create file at ${file.getAbsolutePath}")
             file.createNewFile()
 
-            logger.debug("Opening an output stream to {}", file.getAbsolutePath)
+            logger.debug("Opening an output stream to ${file.getAbsolutePath}")
             val output = new FileOutputStream(file)
 
-            logger.trace("Calling project#writeProject on {}", output)
+            logger.trace("Calling project#writeProject on $output")
             try {
                 project.writeProject(output)
                 output.flush()
@@ -169,8 +169,8 @@ class ProjectController(implicit val interface: ProjectUserInterface,
     def createProjectFromFile(file: File): Project = {
         val projectInstance = ProjectController.ProjectExtensionAssociations(file.getName.split("\\.").last.toLowerCase)()
         val inputStream     = new FileInputStream(file)
-        logger.debug("instantiated project ({}) based on filetype", projectInstance)
-        logger.trace("opened input stream {} on file {}", Seq(inputStream, file):_*)
+        logger.debug(s"instantiated project ($projectInstance) based on filetype")
+        logger.trace(s"opened input stream $inputStream on file $file")
 
         try projectInstance.readProject(inputStream)
         finally inputStream.close()
@@ -215,7 +215,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
      * @param project project
      */
     def addProject(project: Project): Unit = {
-        logger.debug("adding project {}, storage: {}", Seq(project, project.storageLocation):_*)
+        logger.debug(s"adding project $project, storage: ${project.storageLocation}")
         interface.addProject(project)
     }
 }

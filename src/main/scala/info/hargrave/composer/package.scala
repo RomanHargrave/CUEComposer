@@ -2,7 +2,7 @@ package info.hargrave
 
 import info.hargrave.composer.ui.{FXPromptInterface, PromptInterface}
 import info.hargrave.composer.util.{RegexStrings, PropertyStrings, Localization}
-import org.slf4j.{Logger, LoggerFactory}
+import grizzled.slf4j.Logger
 
 import scalafx.application.JFXApp
 import scalafx.stage.Stage
@@ -15,7 +15,7 @@ package object composer extends AnyRef with Localization with PropertyStrings wi
     /**
      * Provides the default logger to use
      */
-    implicit val logger: Logger = LoggerFactory.getLogger("info.hargrave.composer")
+    implicit val logger: Logger = Logger("info.hargrave.composer")
 
     /**
      * Provides the implementation of [[PromptInterface]] to user
