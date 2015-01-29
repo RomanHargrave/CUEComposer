@@ -69,15 +69,32 @@ object Localization {
      * @param name translation name
      * @return localized string, or if not available, the name
      */
-    def translate(name: String): String = localeConfiguration.get[String](name) match {
-        case text:Some[String] => text.get
+    def translate(name: String): String = lookupTranslation(name) match {
+        case Some(text) => text
         case None => name
     }
 
+    /**
+     * Look up a translation and return a result that the program can grok
+     *
+     * @param name translatable name
+     * @return Some(name) if a translation exists, None if no translation exists
+     */
+    def lookupTranslation(name: String): Option[String] = localeConfiguration.get[String](name)
+
+    /**
+     * Determine whether the locale has a definition for the translatable name
+     *
+     * @param name translatable name
+     * @return translation available
+     */
+    def hasTranslationFor(name: String): Boolean = localeConfiguration.contains(name)
+
     final class TString(str: String) {
 
-        def apply(values: Any*): String = {
-            translate(str).format(values:_*)
+        def apply(values: Any*): String = lookupTranslation(str) match {
+            case Some(translation)  => translation.format(values:_*)
+            case None => s"$str{${values.mkString(",")}}"
         }
 
         override def toString: String = translate(str)
