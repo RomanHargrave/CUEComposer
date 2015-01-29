@@ -77,7 +77,7 @@ object Localization {
     final class TString(str: String) {
 
         def apply(values: Any*): String = {
-            translate(str).format(values)
+            translate(str).format(values:_*)
         }
 
         override def toString: String = translate(str)
