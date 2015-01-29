@@ -6,6 +6,8 @@ apply from: 'gradle/javafx.plugin'
 sourceCompatibility = 1.7
 version = '1.0'
 
+def buildType = 'dev'
+
 buildscript {
     repositories {
         jcenter()
@@ -46,12 +48,15 @@ dependencies {
 }
 
 processResources {
-    exclude 'avsl.conf'
     exclude 'GPL_HEADER.txt'
     from("${project.projectDir.absolutePath}/LICENSE") {
         into '/'
     }
-    rename 'avsl_dist.conf', 'avsl.conf'
+
+    if(buildType == 'dist'){
+        exclude 'avsl.conf'
+        rename 'avsl_dist.conf', 'avsl.conf'
+    }
 }
 
 fatJarPrepareFiles {
