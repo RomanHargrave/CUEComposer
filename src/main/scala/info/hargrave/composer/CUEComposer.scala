@@ -79,14 +79,14 @@ final class CUEComposer extends JFXApp with Localization with EventIncludes {
         width       = 640
         height      = 480
 
-        width   onChange { rootPane.prefWidth   = width.value  }
-        height  onChange { rootPane.prefHeight  = height.value }
-
         scene = new Scene {
-            content = rootPane
+            root = rootPane
         }
 
     }
+
+    rootPane.prefWidth.bind(stage.width)
+    rootPane.prefHeight.bind(stage.height)
 
     def saveActiveProject(newFile: Boolean = false): Unit = controller.activeProject match {
         case someProject: Some[Project] =>
