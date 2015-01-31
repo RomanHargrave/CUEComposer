@@ -203,3 +203,4 @@ trait CUEUtilities {
         def totalFrames = pos.getTotalFrames
     }
 }
+object CUEUtilities extends CUEUtilities
