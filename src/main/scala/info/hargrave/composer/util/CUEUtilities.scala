@@ -44,7 +44,7 @@ trait CUEUtilities {
         val dataAccess: MetaData
     }
 
-    object MetaDataAssociations {
+    object MetaDataAssociations extends AnyRef with Localization {
         val BySymbol = Map('album_performer -> md.ALBUMPERFORMER, 'album_songwriter -> md.ALBUMSONGWRITER,
                            'album_title -> md.ALBUMTITLE, 'catalog -> md.CATALOG, 'cd_text_file -> md.CDTEXTFILE,
                            'comment -> md.COMMENT, 'disc_id -> md.DISCID, 'genre -> md.GENRE, 'isrc_code -> md.ISRCCODE,
@@ -56,6 +56,8 @@ trait CUEUtilities {
 
         val Names = BySymbol.keys
         val Ordinals = BySymbol.values
+
+        val Localisation = Names.map((_, t"cue.meta_data.${_}"))
     }
 
     implicit def symbol2metadata(symbol: Symbol): md = MetaDataAssociations.BySymbol.get(symbol) match {
@@ -131,21 +133,6 @@ trait CUEUtilities {
             Map('isrc_code -> (()=>isrcCode, isrcCode_=(_)), 'performer -> (()=>performer, performer_=(_)),
                 'songwriter -> (()=>songwriter, songwriter_=(_)), 'title -> (()=>title, title_=(_)),
                 'track_number -> (()=>optInt2OptStr(number), (s:Option[String])=>number_=(s)))
-
-//        def metaData(name: Symbol): Option[String] = name match {
-//            case 'isrc_code         => isrcCode
-//            case 'performer         => parent.parent.performer
-//            case 'track_performer   => performer
-//            case 'songwriter        => performer.orElse(parent.parent.songwriter)
-//            case 'track_songwriter  => songwriter
-//            case 'title             => title.orElse(parent.parent.title)
-//            case 'track_title       => title
-//            case 'track_number      => number match {
-//                case Some(num)  => Some(num.toString)
-//                case None       => None
-//            }
-//            case other              => parent.parent.metaData(other)
-//        }
 
         def dataType = Option(data.getDataType)
         def dataType_=(tpe: Option[String]) = data.setDataType(tpe.orNull)
