@@ -40,6 +40,11 @@ trait CUEUtilities {
     type MetaData = Map[MetaDataName, MetaDataAccess]
 
     /**
+     * Defines an individual unit wherein a MetaDataName and Access can be found
+     */
+    type MetaDataAssociation = (MetaDataName, MetaDataAccess)
+
+    /**
      * An object that provides a MetaData via dataAccess
      */
     sealed trait HasMetaData {
@@ -59,6 +64,17 @@ trait CUEUtilities {
     }
 
     /**
+     * Provides decoration that allow for easy access to MetaDataAssociation
+     *
+     * @param assoc implicit association
+     */
+    implicit class MetaDataAssociationDecorator(assoc: MetaDataAssociation) {
+
+        def name    = assoc._1
+        def access  = assoc._2
+    }
+
+    /**
      * Various assortments of collections for interacting with md/Symbol conversion and Localisation
      */
     object MetaDataAssociations extends AnyRef with Localization {
@@ -74,7 +90,7 @@ trait CUEUtilities {
         val Names = BySymbol.keys
         val Ordinals = BySymbol.values
 
-        val Localisation = Names.map(sym => (sym, t"cue.meta_data.$sym")).toMap
+        val Localisation = Names.map(sym => (sym, t"cue.meta_data.${sym.name}")).toMap
     }
 
     implicit def symbol2metadata(symbol: Symbol): md = MetaDataAssociations.BySymbol.get(symbol) match {
