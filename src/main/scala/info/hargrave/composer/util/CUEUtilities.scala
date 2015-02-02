@@ -9,68 +9,80 @@ import scala.collection.mutable.{Seq => MutableSeq, Set => MutableSet}
 
 trait CUEUtilities {
 
-    implicit def symbol2metadata(symbol: Symbol): md = symbol match {
-        case 'album_performer   => md.ALBUMPERFORMER
-        case 'album_songwriter  => md.ALBUMSONGWRITER
-        case 'album_title       => md.ALBUMTITLE
-        case 'catalog           => md.CATALOG
-        case 'cd_text_file      => md.CDTEXTFILE
-        case 'comment           => md.COMMENT
-        case 'disc_id           => md.DISCID
-        case 'genre             => md.GENRE
-        case 'isrc_code         => md.ISRCCODE
-        case 'performer         => md.PERFORMER
-        case 'songwriter        => md.SONGWRITER
-        case 'title             => md.TITLE
-        case 'track_number      => md.TRACKNUMBER
-        case 'track_performer   => md.TRACKPERFORMER
-        case 'track_songwriter  => md.TRACKSONGWRITER
-        case 'track_title       => md.TRACKTITLE
-        case 'year              => md.YEAR
-        case _                  => throw new IllegalArgumentException("Invalid metadata field")
+    private implicit def optStr2OptInt(optStr: Option[String]): Option[Int] = optStr match {
+        case Some(str)  => Some(str.toInt)
+        case None       => None
     }
 
-    implicit def metadata2symbol(metaData: md): Symbol = metaData match {
-        case md.ALBUMPERFORMER  => 'album_performer
-        case md.ALBUMSONGWRITER => 'album_songwriter
-        case md.ALBUMTITLE      => 'album_title
-        case md.CATALOG         => 'catalog
-        case md.CDTEXTFILE      => 'cd_text_file
-        case md.COMMENT         => 'comment
-        case md.DISCID          => 'disc_id
-        case md.GENRE           => 'genre
-        case md.ISRCCODE        => 'isrc_code
-        case md.PERFORMER       => 'performer
-        case md.SONGWRITER      => 'songwriter
-        case md.TITLE           => 'title
-        case md.TRACKNUMBER     => 'track_number
-        case md.TRACKPERFORMER  => 'track_performer
-        case md.TRACKSONGWRITER => 'track_songwriter
-        case md.TRACKTITLE      => 'track_title
-        case md.YEAR            => 'year
+    private implicit def optInt2OptStr(optInt: Option[Int]): Option[String] = optInt match {
+        case Some(num)  => Some(num.toString)
+        case None       => None
     }
 
-    implicit class CUESheetWrapper(sheet: CueSheet) {
+    /**
+     * Defines the type of a key to retrieve the undlerying metadata access
+     */
+    type MetaDataName   = Symbol
 
-        def metaData(field: Symbol): Option[String] = field match {
-            case 'album_performer | 'performer  => performer
-            case 'album_songwriter| 'songwriter => songwriter
-            case 'album_title | 'title          => title
-            case 'catalog                       => catalog
-            case 'cd_text_file                  => cdTextFile
-            case 'comment                       => comment
-            case 'disc_id                       => discID
-            case 'genre                         => genre
-            case 'year                          => year match {
-                case Some(number) => Some(number.toString)
-                case None => None
-            }
-            case _                              =>
+    /**
+     * Defines the type of the underlying metadata implementation
+     */
+    type MetaDataOrd    = md
+
+    /**
+     * Defines a tuple containing an accessor for a data value at position 1, and a mutator at position 2
+     */
+    type MetaDataAccess = (()=>Option[String], Option[String]=>Unit)
+
+    /**
+     * Defines an association between a metadata key and functions to mutate that data
+     */
+    type MetaData = Map[MetaDataName, MetaDataAccess]
+
+    sealed trait HasMetaData {
+
+        val dataAccess: MetaData
+    }
+
+    object MetaDataAssociations {
+        val BySymbol = Map('album_performer -> md.ALBUMPERFORMER, 'album_songwriter -> md.ALBUMSONGWRITER,
+                           'album_title -> md.ALBUMTITLE, 'catalog -> md.CATALOG, 'cd_text_file -> md.CDTEXTFILE,
+                           'comment -> md.COMMENT, 'disc_id -> md.DISCID, 'genre -> md.GENRE, 'isrc_code -> md.ISRCCODE,
+                           'performer -> md.PERFORMER, 'songwriter -> md.SONGWRITER, 'title -> md.TITLE, 
+                           'track_number -> md.TRACKNUMBER, 'track_performer -> md.TRACKPERFORMER, 
+                           'track_songwriter -> md.TRACKSONGWRITER, 'track_title -> md.TRACKTITLE, 'year -> md.YEAR)
+
+        val ByOrdinal = BySymbol.map(_.swap)
+
+        val Names = BySymbol.keys
+        val Ordinals = BySymbol.values
+    }
+
+    implicit def symbol2metadata(symbol: Symbol): md = MetaDataAssociations.BySymbol.get(symbol) match {
+        case Some(metaData) => metaData
+        case None           => throw new IllegalArgumentException("No such metadata exists")
+    }
+
+    implicit def metadata2symbol(metaData: md): Symbol = MetaDataAssociations.ByOrdinal(metaData)
+
+    implicit class CUESheetWrapper(sheet: CueSheet) extends HasMetaData {
+
+        val dataAccess: MetaData =
+            Map('performer -> (()=>performer, performer_=(_)), 'songwriter -> (()=>songwriter, songwriter_=(_)),
+                'title -> (()=>title, title_=(_)), 'catalog -> (()=>catalog, catalog_=(_)),
+                'cd_text_file -> (()=>cdTextFile, cdTextFile_=(_)), 'comment -> (()=>comment, comment_=(_)),
+                'disc_id -> (()=>discID, discID_=(_)), 'genre -> (()=>genre, genre_=(_)),
+                'year -> (()=>optInt2OptStr(year), (s: Option[String])=>year_=(s)))
+
+
+        def metaData(field: Symbol): Option[String] = dataAccess.get(field) match {
+            case Some(functions)    => functions._1()
+            case _                  =>
                 throw new IllegalArgumentException("Unsupported metadata field")
         }
 
         def performer = Option(sheet.getPerformer)
-        def performer_=(name: Option[String]): Unit = sheet.setPerformer(name.orNull)
+        def performer_=(name: Option[String]) = sheet.setPerformer(name.orNull)
 
         def songwriter = Option(sheet.getSongwriter)
         def songwriter_=(name: Option[String]) = sheet.setSongwriter(name.orNull)
@@ -95,7 +107,6 @@ trait CUEUtilities {
 
         def year = if(sheet.getYear >= 0) Some(sheet.getYear) else None
         def year_=(num: Option[Int]) = sheet.setYear(num.getOrElse(-1))
-
     }
 
     implicit class FileDataWrapper(data: FileData) {
@@ -114,22 +125,27 @@ trait CUEUtilities {
         def parent_=(sheet: CueSheet) = data.setParent(sheet)
     }
 
-    implicit class TrackDataWrapper(data: TrackData) {
+    implicit class TrackDataWrapper(data: TrackData) extends HasMetaData {
 
-        def metaData(name: Symbol): Option[String] = name match {
-            case 'isrc_code         => isrcCode
-            case 'performer         => parent.parent.performer
-            case 'track_performer   => performer
-            case 'songwriter        => performer.orElse(parent.parent.songwriter)
-            case 'track_songwriter  => songwriter
-            case 'title             => title.orElse(parent.parent.title)
-            case 'track_title       => title
-            case 'track_number      => number match {
-                case Some(num)  => Some(num.toString)
-                case None       => None
-            }
-            case other              => parent.parent.metaData(other)
-        }
+        val dataAccess: MetaData =
+            Map('isrc_code -> (()=>isrcCode, isrcCode_=(_)), 'performer -> (()=>performer, performer_=(_)),
+                'songwriter -> (()=>songwriter, songwriter_=(_)), 'title -> (()=>title, title_=(_)),
+                'track_number -> (()=>optInt2OptStr(number), (s:Option[String])=>number_=(s)))
+
+//        def metaData(name: Symbol): Option[String] = name match {
+//            case 'isrc_code         => isrcCode
+//            case 'performer         => parent.parent.performer
+//            case 'track_performer   => performer
+//            case 'songwriter        => performer.orElse(parent.parent.songwriter)
+//            case 'track_songwriter  => songwriter
+//            case 'title             => title.orElse(parent.parent.title)
+//            case 'track_title       => title
+//            case 'track_number      => number match {
+//                case Some(num)  => Some(num.toString)
+//                case None       => None
+//            }
+//            case other              => parent.parent.metaData(other)
+//        }
 
         def dataType = Option(data.getDataType)
         def dataType_=(tpe: Option[String]) = data.setDataType(tpe.orNull)
