@@ -39,11 +39,28 @@ trait CUEUtilities {
      */
     type MetaData = Map[MetaDataName, MetaDataAccess]
 
+    /**
+     * An object that provides a MetaData via dataAccess
+     */
     sealed trait HasMetaData {
 
         val dataAccess: MetaData
     }
 
+    /**
+     * Provides decorations that allow for .value/.value = _ to be called on metadata accessors
+     *
+     * @param access implicit access
+     */
+    implicit class MetaDataAccessDecorator(access: MetaDataAccess) {
+
+        def value = access._1()
+        def value_=(optStr: Option[String]) = access._2(optStr)
+    }
+
+    /**
+     * Various assortments of collections for interacting with md/Symbol conversion and Localisation
+     */
     object MetaDataAssociations extends AnyRef with Localization {
         val BySymbol = Map('album_performer -> md.ALBUMPERFORMER, 'album_songwriter -> md.ALBUMSONGWRITER,
                            'album_title -> md.ALBUMTITLE, 'catalog -> md.CATALOG, 'cd_text_file -> md.CDTEXTFILE,
@@ -57,7 +74,7 @@ trait CUEUtilities {
         val Names = BySymbol.keys
         val Ordinals = BySymbol.values
 
-        val Localisation = Names.map((_, t"cue.meta_data.${_}"))
+        val Localisation = Names.map(sym => (sym, t"cue.meta_data.$sym")).toMap
     }
 
     implicit def symbol2metadata(symbol: Symbol): md = MetaDataAssociations.BySymbol.get(symbol) match {
@@ -67,6 +84,11 @@ trait CUEUtilities {
 
     implicit def metadata2symbol(metaData: md): Symbol = MetaDataAssociations.ByOrdinal(metaData)
 
+    /**
+     * Provides scala decorations for [[CueSheet]] and [[HasMetaData MetaData access]]
+     *
+     * @param sheet implicit CueSheet
+     */
     implicit class CUESheetWrapper(sheet: CueSheet) extends HasMetaData {
 
         val dataAccess: MetaData =
@@ -111,6 +133,11 @@ trait CUEUtilities {
         def year_=(num: Option[Int]) = sheet.setYear(num.getOrElse(-1))
     }
 
+    /**
+     * Provides scala decorators for [[FileData]]
+     *
+     * @param data implicit FileData
+     */
     implicit class FileDataWrapper(data: FileData) {
 
         def indices: MutableSeq[Index] = data.getAllIndices
@@ -127,6 +154,11 @@ trait CUEUtilities {
         def parent_=(sheet: CueSheet) = data.setParent(sheet)
     }
 
+    /**
+     * Provides scala decorators for [[TrackData]] as well as [[HasMetaData]]
+     *
+     * @param data implicit TrackData
+     */
     implicit class TrackDataWrapper(data: TrackData) extends HasMetaData {
 
         val dataAccess: MetaData =
@@ -168,6 +200,11 @@ trait CUEUtilities {
         def parent_=(fileData: FileData) = data.setParent(fileData)
     }
 
+    /**
+     * Provides scala decorators for [[Index]]
+     *
+     * @param index implicit Index
+     */
     implicit class IndexWrapper(index: Index) {
 
         def number = if(index.getNumber >= 0) Some(index.getNumber) else None
@@ -177,6 +214,11 @@ trait CUEUtilities {
         def position_=(pos: Option[Position]) = index.setPosition(pos.orNull)
     }
 
+    /**
+     * Provides scala decorators for [[Position]]
+     *
+     * @param pos implicit Position
+     */
     implicit class PositionWrapper(pos: Position) {
 
         def frames = if(pos.getFrames >= 0) Some(pos.getFrames) else None
