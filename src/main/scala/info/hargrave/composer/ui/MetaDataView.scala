@@ -9,7 +9,7 @@ import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
 import scalafx.scene.control.cell.{TextFieldTableCell, ComboBoxTableCell}
 import scalafx.scene.control._
-import scalafx.scene.layout.BorderPane
+import scalafx.scene.layout.{VBox, BorderPane}
 import scalafx.Includes._
 
 import info.hargrave.composer._
@@ -21,7 +21,7 @@ import scalafx.util.converter.DefaultStringConverter
 /**
  * Provides editing functionality for [[info.hargrave.composer.util.CUEUtilities.HasMetaData]]
  */
-class MetaDataView(dataSource: HasMetaData) extends BorderPane {
+class MetaDataView(dataSource: HasMetaData) extends VBox {
 
     val editableProperty: BooleanProperty = new BooleanProperty
 
@@ -81,7 +81,8 @@ class MetaDataView(dataSource: HasMetaData) extends BorderPane {
 
     // Control Setup ---------------------------------------------------------------------------------------------------
 
-    center = dataTableView
+    children += editingToolBar
+    children += dataTableView
 
     // TableView setup -------------------------------------------------------------------------------------------------
 
@@ -92,8 +93,7 @@ class MetaDataView(dataSource: HasMetaData) extends BorderPane {
     dataTableView.items.value.onChange({synchronizeAvailableFields()})
 
     // Toolbar Setup ---------------------------------------------------------------------------------------------------
-
-    editableProperty.onChange({ top = if(editable) editingToolBar else null })
+    editingToolBar.visible.bind(editableProperty)
 
     remPropertyBtn.onAction = () => {
         val removedItem = Option(dataTableView.selectionModel.value.selectedItemProperty.value)
