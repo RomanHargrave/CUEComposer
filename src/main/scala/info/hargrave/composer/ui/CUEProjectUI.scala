@@ -2,16 +2,16 @@ package info.hargrave.composer.ui
 
 import info.hargrave.composer._
 import info.hargrave.composer.backend.manager.projects.CUEProject
-import info.hargrave.composer.ui.CUEProjectUI.CueEntryCell
 import info.hargrave.composer.util.CUEUtilities._
 import jwbroek.cuelib.{CueSheet, FileData, TrackData}
 
 import scala.collection.JavaConversions._
 import scalafx.Includes._
+import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Side
 import scalafx.scene.control.TabPane.TabClosingPolicy
 import scalafx.scene.control._
-import scalafx.scene.layout.BorderPane
+import scalafx.scene.layout.{Priority, Pane, HBox, BorderPane}
 
 /**
  * Frontend implementation for [[CUEProject CUEProjects]]
@@ -29,25 +29,33 @@ class CUEProjectUI(project: CUEProject) extends TabPane {
 
     // Element Editor --------------------------------------------------------------------------------------------------
 
-    private val elementsEditor = new BorderPane()
+    /*
+     * Contains the active cuesheet element
+     */
+    private val elementsEditor  = new HBox {
+        vgrow       = Priority.Always
+        hgrow       = Priority.Always
+        fillHeight  = true
+    }
+    private val elementTree     = new CUESheetMemberTree(cueSheet){
+        editable    = true
+        vgrow       = Priority.Always
+    }
+    private val activeElement   = new Pane
 
-    private val elementsToolbar = new ToolBar()
-    elementsEditor.top = elementsToolbar
+    elementTree.onSelectionChanged {(selection: Option[Either[FileData, TrackData]]) =>
+        val newChild = selection match {
+            case Some(Left(fileData))   => Some(new FileDataView(fileData) {
+                editable = true
+            })
+            case Some(Right(trackData)) => None
+            case None                   => None
+        }
 
-    private val elementsList = new TreeView[Either[FileData, TrackData]] {
-        root = new TreeItem
-        showRoot = false
-        cellFactory = {view => new CueEntryCell}
+        activeElement.children = if(newChild.isDefined) ObservableBuffer(Seq(newChild.get)) else null
     }
 
-    cueSheet.getFileData.foreach({data =>
-                                    val fileItem = new TreeItem[Either[FileData, TrackData]](Left(data))
-                                    data.getTrackData.foreach({track => fileItem.getChildren.add(new TreeItem[Either[FileData, TrackData]](Right(track)))})
-                                    elementsList.root.value.getChildren.add(fileItem)
-                                 })
-
-
-    elementsEditor.left = elementsList
+    elementsEditor.children ++= Seq(elementTree, activeElement)
 
     tabs += new Tab {
         content = elementsEditor
@@ -57,7 +65,9 @@ class CUEProjectUI(project: CUEProject) extends TabPane {
     // CUE Sheet Metadata Editor ---------------------------------------------------------------------------------------
 
     private val sheetMetadataEditor = new MetaDataView(cueSheet) {
-        editable = true
+        editable    = true
+        vgrow       = Priority.Always
+        hgrow       = Priority.Always
     }
 
     tabs += new Tab {
@@ -65,24 +75,7 @@ class CUEProjectUI(project: CUEProject) extends TabPane {
         text    = t"ui.cue.sheet_data_editor"
     }.delegate
 
+    hgrow   = Priority.Always
+    vgrow   = Priority.Always
 }
-object CUEProjectUI {
 
-
-    class CueEntryCell extends CustomTreeCell[Either[FileData, TrackData]] {
-
-        override def updateItem(item: Either[FileData, TrackData], empty: Boolean): Unit = empty match {
-            case true =>
-                text = null
-            case false =>
-                text = item match {
-                    case null => null // oh java
-                    case Left(fileData)     =>
-                        s"${fileData.getFileType} ${fileData.getFile}"
-                    case Right(trackData)   =>
-                        if(trackData.getNumber > 0) tf"ui.cue.track_entry"(trackData.getNumber) else t"ui.cue.undefined_track"
-                }
-        }
-    }
-
-}

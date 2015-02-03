@@ -9,7 +9,7 @@ import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
 import scalafx.scene.control.cell.{TextFieldTableCell, ComboBoxTableCell}
 import scalafx.scene.control._
-import scalafx.scene.layout.{VBox, BorderPane}
+import scalafx.scene.layout.{Priority, VBox, BorderPane}
 import scalafx.Includes._
 
 import info.hargrave.composer._
@@ -34,7 +34,9 @@ class MetaDataView(dataSource: HasMetaData) extends VBox {
     }
     editingToolBar.items ++= Seq(addPropertyBtn, remPropertyBtn)
 
-    private val dataTableView   = new TableView[MetaDataAssociation]()
+    private val dataTableView   = new TableView[MetaDataAssociation]() {
+        vgrow = Priority.Always
+    }
 
     private val tableDataKeyCol = new TableColumn[MetaDataAssociation, String] {
         text = t"ui.md_view.data_col"

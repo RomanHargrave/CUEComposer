@@ -6,7 +6,7 @@ import scalafx.Includes._
 import scalafx.beans.property.BooleanProperty
 import scalafx.event.subscriptions.Subscription
 import scalafx.scene.control.{TreeItem, TreeView, ToolBar}
-import scalafx.scene.layout.BorderPane
+import scalafx.scene.layout.{Priority, VBox, BorderPane}
 
 import info.hargrave.composer.ui.CUESheetMemberTree.CueEntryCell
 import info.hargrave.composer.util.CUEUtilities._
@@ -22,19 +22,21 @@ import scala.collection.JavaConversions._
  *
  * When editable is true, it will display a toolbar that allows for addition and removal of sheet members.
  */
-class CUESheetMemberTree(sheet: CueSheet) extends BorderPane {
+class CUESheetMemberTree(sheet: CueSheet) extends VBox {
 
     val editableProperty = new BooleanProperty
 
     private val elementsToolbar = new ToolBar()
-    top = elementsToolbar
+    children += elementsToolbar
     elementsToolbar.visible.bind(editableProperty)
 
     private val elementsList = new TreeView[Either[FileData, TrackData]] {
         root = new TreeItem
         showRoot = false
         cellFactory = {view => new CueEntryCell}
+        vgrow   = Priority.Always
     }
+    children += elementsList
 
     // Data Setup ------------------------------------------------------------------------------------------------------
 
@@ -65,7 +67,7 @@ class CUESheetMemberTree(sheet: CueSheet) extends BorderPane {
     }
 
     final def onSelectionChanged(op: Option[Either[FileData, TrackData]]=>_): Subscription =
-        elementsList.selectionModel.value.selectedItemProperty.onChange({
+        elementsList.selectionModel.value.selectedItemProperty.onChange ({
             op(selectedItem)
             ()
         })
