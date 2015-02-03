@@ -169,6 +169,15 @@ trait CUEUtilities {
         def parent = data.getParent
         def parent_=(sheet: CueSheet) = data.setParent(sheet)
     }
+    object FileEntry {
+
+        /**
+         * List of filetypes acknowledged by the CUE standard,
+         * though the filetype field can be anything so long as the cue parser
+         * supports that file type
+         */
+        val FileTypes = Seq("BINARY", "MOTOROLA", "AIFF", "WAV", "MP3")
+    }
 
     /**
      * Provides scala decorators for [[TrackData]] as well as [[HasMetaData]]
