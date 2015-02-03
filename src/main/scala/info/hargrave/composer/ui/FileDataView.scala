@@ -1,5 +1,7 @@
 package info.hargrave.composer.ui
 
+import javafx.geometry.{Insets => JFXInsets}
+
 import jwbroek.cuelib.FileData
 
 import info.hargrave.composer._
@@ -7,6 +9,7 @@ import info.hargrave.composer.util.CUEUtilities._
 
 import scalafx.beans.property.BooleanProperty
 import scalafx.collections.ObservableBuffer
+import scalafx.geometry.Insets
 import scalafx.scene.control.{ComboBox, TextField, Label}
 import scalafx.scene.layout.{GridPane, Pane}
 
@@ -16,6 +19,12 @@ import scalafx.scene.layout.{GridPane, Pane}
 class FileDataView(fileData: FileData) extends GridPane {
 
     val editableProperty = new BooleanProperty()
+
+    // View Setup ------------------------------------------------------------------------------------------------------
+
+    padding = new Insets(new JFXInsets(5, 5, 5, 5))
+    hgap    = 10.0
+    vgap    = 5.0
 
     // File Name -------------------------------------------------------------------------------------------------------
 
