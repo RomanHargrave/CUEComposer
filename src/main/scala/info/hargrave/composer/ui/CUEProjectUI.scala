@@ -11,7 +11,7 @@ import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Side
 import scalafx.scene.control.TabPane.TabClosingPolicy
 import scalafx.scene.control._
-import scalafx.scene.layout.{Priority, Pane, HBox, BorderPane}
+import scalafx.scene.layout._
 
 /**
  * Frontend implementation for [[CUEProject CUEProjects]]
@@ -41,21 +41,30 @@ class CUEProjectUI(project: CUEProject) extends TabPane {
         editable    = true
         vgrow       = Priority.Always
     }
-    private val activeElement   = new Pane
+
+    elementsEditor.children = ObservableBuffer(Seq(elementTree))
 
     elementTree.onSelectionChanged {(selection: Option[Either[FileData, TrackData]]) =>
         val newChild = selection match {
             case Some(Left(fileData))   => Some(new FileDataView(fileData) {
                 editable = true
+                vgrow = Priority.Always
+                hgrow = Priority.Always
             })
-            case Some(Right(trackData)) => None
+            case Some(Right(trackData)) => Some(new TrackDataView(trackData) {
+                editable = true
+                vgrow = Priority.Always
+                hgrow = Priority.Always
+            })
             case None                   => None
         }
 
-        activeElement.children = if(newChild.isDefined) ObservableBuffer(Seq(newChild.get)) else null
+        /*
+         * Stop using intermediate panes, because debugging vstretch sucks.
+         */
+        elementsEditor.children = ObservableBuffer(Seq(elementTree, newChild.orNull))
     }
 
-    elementsEditor.children ++= Seq(elementTree, activeElement)
 
     tabs += new Tab {
         content = elementsEditor
