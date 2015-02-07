@@ -239,6 +239,10 @@ trait CUEUtilities {
 
         def position = Option(index.getPosition)
         def position_=(pos: Option[Position]) = index.setPosition(pos.orNull)
+        
+        def formatted =
+            tf"cuesheet.index.format"(number.getOrElse(0),
+                                      if (position.isDefined) position.get.formatted else t"ui.common.concept_none")
     }
 
     /**
