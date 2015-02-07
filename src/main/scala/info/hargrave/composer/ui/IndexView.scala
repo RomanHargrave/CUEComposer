@@ -16,9 +16,7 @@ import scalafx.scene.layout.HBox
 /**
  * Wraps a [[PositionView]] and allows for modification of an index
  */
-class IndexView(index: Index) extends HBox {
-
-    val editableProperty = new BooleanProperty
+class IndexView(index: Index) extends HBox with Editable {
 
     private val positionView    = new PositionView(index.position.orNull)
     positionView.editableProperty.bind(editableProperty)

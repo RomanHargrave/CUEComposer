@@ -14,23 +14,27 @@ import scalafx.scene.layout.HBox
 /**
  * Allows for the display (and editing) of a  [[Position]]
  */
-class PositionView(position: Position) extends HBox {
+class PositionView(position: Position) extends HBox with Editable {
 
-    val editableProperty = new BooleanProperty()
+    private val lengthLabel = new Label(t"ui.common.noun_minutes")
+    private val separator = new Label(":")
 
-    private val lengthLabel     = new Label(t"ui.common.noun_minutes")
-    private val separator       = new Label(":")
-
-    private val minuteSpinner   = new NumberSpinner(0, 99) {
-        valueProperty.onChange { position.minutes = Option(getValue.intValue) }
+    private val minuteSpinner = new NumberSpinner(0, 99) {
+        valueProperty.onChange {
+                                   position.minutes = Option(getValue.intValue)
+                               }
         valueProperty.value = position.minutes.getOrElse[Int](0)
     }
-    private val secondSpinner   = new NumberSpinner(0, 99) {
-        valueProperty.onChange { position.seconds = Option(getValue.intValue) }
+    private val secondSpinner = new NumberSpinner(0, 99) {
+        valueProperty.onChange {
+                                   position.seconds = Option(getValue.intValue)
+                               }
         valueProperty.value = position.seconds.getOrElse[Int](0)
     }
-    private val frameSpinner    = new NumberSpinner(0, 75) {
-        valueProperty.onChange { position.frames = Option(getValue.intValue) }
+    private val frameSpinner = new NumberSpinner(0, 75) {
+        valueProperty.onChange {
+                                   position.frames = Option(getValue.intValue)
+                               }
         valueProperty.value = position.seconds.getOrElse[Int](0)
     }
 
@@ -40,6 +44,4 @@ class PositionView(position: Position) extends HBox {
 
     children = Seq[Node](minuteSpinner, secondSpinner, frameSpinner)
 
-    def editable = editableProperty.value
-    def editable_=(bool: Boolean) = editableProperty.value = bool
 }

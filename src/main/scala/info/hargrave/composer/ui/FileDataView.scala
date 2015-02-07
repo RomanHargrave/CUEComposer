@@ -16,9 +16,7 @@ import scalafx.scene.layout.{GridPane, Pane}
 /**
  * Provides the editing view for filedata
  */
-class FileDataView(fileData: FileData) extends GridPane {
-
-    val editableProperty = new BooleanProperty()
+class FileDataView(fileData: FileData) extends GridPane with Editable {
 
     // View Setup ------------------------------------------------------------------------------------------------------
 
@@ -47,8 +45,5 @@ class FileDataView(fileData: FileData) extends GridPane {
     }
 
     this.addRow(1, fileTypeLabel, typeField)
-
-    def editable = editableProperty.value
-    def editable_=(bool: Boolean) = editableProperty.value = bool
 
 }

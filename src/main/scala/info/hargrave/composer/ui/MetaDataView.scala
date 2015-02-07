@@ -21,9 +21,7 @@ import scalafx.util.converter.DefaultStringConverter
 /**
  * Provides editing functionality for [[info.hargrave.composer.util.CUEUtilities.HasMetaData]]
  */
-class MetaDataView(dataSource: HasMetaData) extends VBox {
-
-    val editableProperty: BooleanProperty = new BooleanProperty
+class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
 
     private val editingToolBar  = new ToolBar()
     private val addPropertyBtn  = new MenuButton {
@@ -75,11 +73,6 @@ class MetaDataView(dataSource: HasMetaData) extends VBox {
         logger.debug(s"updating $dataSource(${event.rowValue.name} = ${access.value}) from cell value ${event.oldValue} to ${event.newValue}")
         access.value = Some(event.newValue)
     }
-
-    // Control API -----------------------------------------------------------------------------------------------------
-
-    final def editable = editableProperty.value
-    final def editable_=(bool: Boolean) = editableProperty.value = bool
 
     // Control Setup ---------------------------------------------------------------------------------------------------
 
