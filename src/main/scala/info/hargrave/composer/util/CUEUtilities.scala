@@ -279,7 +279,7 @@ trait CUEUtilities {
          *
          * @return timestamp string
          */
-        def formattedString = tf"cuesheet.position.format"(minutes.getOrElse(0), seconds.getOrElse(0), frames.getOrElse(0))
+        def formatted = tf"cuesheet.position.format"(minutes.getOrElse(0), seconds.getOrElse(0), frames.getOrElse(0))
     }
 }
 object CUEUtilities extends CUEUtilities
