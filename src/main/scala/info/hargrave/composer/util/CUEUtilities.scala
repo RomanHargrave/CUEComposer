@@ -2,6 +2,8 @@ package info.hargrave.composer.util
 
 import scala.collection.JavaConversions._
 
+import info.hargrave.composer._
+
 import jwbroek.cuelib._
 import CueSheet.{MetaDataField => md}
 
@@ -277,7 +279,7 @@ trait CUEUtilities {
          *
          * @return timestamp string
          */
-        def formattedString = s"$minutes:$seconds:$frames"
+        def formattedString = tf"cuesheet.position.format"(minutes.getOrElse(0), seconds.getOrElse(0), frames.getOrElse(0))
     }
 }
 object CUEUtilities extends CUEUtilities
