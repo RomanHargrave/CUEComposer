@@ -271,6 +271,13 @@ trait CUEUtilities {
         }
 
         def totalFrames = pos.getTotalFrames
+
+        /**
+         * Returns a formatted string representing the position as a timestamp
+         *
+         * @return timestamp string
+         */
+        def formattedString = s"$minutes:$seconds:$frames"
     }
 }
 object CUEUtilities extends CUEUtilities
