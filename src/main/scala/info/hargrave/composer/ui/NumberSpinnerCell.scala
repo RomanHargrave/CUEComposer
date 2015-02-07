@@ -66,7 +66,7 @@ object NumberSpinnerCell {
                     setOnKeyReleased({(event: KeyEvent) =>
                         event.code match {
                             case KeyCode.ENTER  =>
-                                commitEdit(getValue)
+                                commitEdit(stringConverter.value.fromString(getText))
                             case KeyCode.ESCAPE =>
                                 cancelEdit()
                             case _ => // Ignored
