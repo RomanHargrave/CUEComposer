@@ -221,10 +221,24 @@ trait CUEUtilities {
 
         def indices: MutableSeq[Index] = data.getIndices
 
-        def flags: MutableSet[String] = data.getFlags
+        def flags: Iterable[String] = data.getFlags
+        def flags_=(newFlags: Iterable[String]) = {
+            data.getFlags.clear()
+            data.getFlags.addAll(newFlags)
+        }
 
         def parent = data.getParent
         def parent_=(fileData: FileData) = data.setParent(fileData)
+    }
+    object TrackEntry {
+
+        /**
+         * Describes all available track flags
+         */
+        val Flags = Seq("DCP",      // Digital copy permitted
+                        "4CH",      // Four-channel audio
+                        "PRE",      // Pre-emphasis enabled (audio only)
+                        "SCMS")     // Serial Copy Management System
     }
 
     /**
