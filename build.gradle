@@ -62,10 +62,24 @@ fatJarPrepareFiles {
     exclude 'library.properties'
 }
 
+jfxCopyLibs.enabled = false
+
+jar{
+    dependsOn configurations.runtime
+    from {
+        configurations.runtime
+                .findAll { !it.name.contains('jfxrt.jar') }
+                .collect { it.isDirectory() ? it : zipTree(it) }
+                .collect { it.matching {
+                    exclude 'LICENSE', 'README'
+                } }
+    }
+}
+
 javafx {
     appID       'CUEComposer'
     appName     'CUE Composer'
-    mainClass   'info.hargrave.composer.CUEComposer'
+    mainClass   'info.hargrave.composer.ComposerLauncher'
 
     category    = 'Audio'
     copyright   = 'Copyleft © 2014 Roman Hargrave'
