@@ -1,13 +1,11 @@
 package info.hargrave.composer.ui
 
+import info.hargrave.composer.ui.PromptInterface.PromptType
 import jwbroek.cuelib.{Position, Index}
-
-import javafx.scene.control.{TableView => JFXTableView}
 
 import scalafx.beans.property.ObjectProperty
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
-import scalafx.scene.control.TableView.ResizeFeatures
 import scalafx.scene.control.{Button, ToolBar, TableColumn, TableView}
 import scalafx.scene.layout.{Priority, VBox}
 import scalafx.Includes._
@@ -35,7 +33,7 @@ class IndexTableView(indices: Seq[Index]) extends VBox with Editable {
             editable.bind(editableProperty)
             lowerBound = 0
             upperBound = 99
-            prefWidth.bind(col.prefWidth)
+            minWidth.bind(col.minWidth)
         }
     }
     private val numberValueFactory  = {(col: CellDataFeatures[Index, Number]) =>
@@ -45,20 +43,23 @@ class IndexTableView(indices: Seq[Index]) extends VBox with Editable {
         text                = t"ui.common.noun_number"
         cellFactory         = numberCellFactory
         cellValueFactory    = numberValueFactory
-        prefWidth           = 67
+        minWidth            = 80
         editable.bind(editableProperty)
     }
     indexNumberColumn.onEditCommit  = {(event: CellEditEvent[Index, Number]) =>
-        logger.trace(s"${event.rowValue.formatted} number updating to ${event.newValue.intValue}")
-        event.rowValue.number = Option(event.newValue.intValue)
-        logger.debug(s"${event.rowValue.formatted} number updated to ${event.rowValue.number}")
-
+        if(indices.exists(_.number == Option(event.newValue))){
+            event.consume()
+            Prompts.displayNotificationPrompt(t"notification.index_error", t"notification.index_error.banner",
+                                              tf"notification.duplicate_index"(event.newValue), PromptType.ERROR)
+        } else {
+            event.rowValue.number = Option(event.newValue.intValue)
+        }
     }
 
     private val positionCellFactory = {(col: TableColumn[Index, Position]) =>
         new PositionTableCell[Index] {
             editable.bind(editableProperty)
-            prefWidth.bind(col.prefWidth)
+            minWidth.bind(col.minWidth)
         }
     }
     private val positionValFactory  = {(col: CellDataFeatures[Index, Position]) =>
@@ -68,7 +69,7 @@ class IndexTableView(indices: Seq[Index]) extends VBox with Editable {
         text                = t"ui.common.noun_position"
         cellFactory         = positionCellFactory
         cellValueFactory    = positionValFactory
-        prefWidth           = 200
+        minWidth            = 200
         editable.bind(editableProperty)
     }
     indexPositionColumn.onEditCommit    = {(event: CellEditEvent[Index, Position]) =>
