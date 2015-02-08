@@ -149,6 +149,14 @@ trait CUEUtilities {
 
         def year = if(sheet.getYear >= 0) Some(sheet.getYear) else None
         def year_=(num: Option[Int]) = sheet.setYear(num.getOrElse(-1))
+
+        def fileData: Seq[FileData] = sheet.getFileData
+        def fileData_=(data: Seq[FileData]) = {
+            sheet.getFileData.clear()
+            sheet.getFileData.addAll(data)
+        }
+
+        def trackData: Seq[TrackData] = sheet.getAllTrackData
     }
 
     /**
