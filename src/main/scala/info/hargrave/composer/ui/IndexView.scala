@@ -2,7 +2,6 @@ package info.hargrave.composer.ui
 
 import com.blogspot.myjavafx.NumberSpinner
 import info.hargrave.composer._
-import info.hargrave.composer.ui.PositionView
 import info.hargrave.composer.util.CUEUtilities._
 
 import jwbroek.cuelib.Index
