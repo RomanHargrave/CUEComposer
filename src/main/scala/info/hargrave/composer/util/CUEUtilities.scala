@@ -239,6 +239,18 @@ trait CUEUtilities {
                         "4CH",      // Four-channel audio
                         "PRE",      // Pre-emphasis enabled (audio only)
                         "SCMS")     // Serial Copy Management System
+
+        /**
+         * Describes all available data types
+         */
+        val DataTypes = Seq("AUDIO",        // Audio track
+                            "CDG",          // Karaoke CD+G
+                            "MODE1/2048",   // CD-ROM cooked data
+                            "MODE1/2352",   // CD-ROM raw data
+                            "MODE2/2336",   // CD-ROM-XA data
+                            "MODE2/2352",   // CD-ROM-XA data
+                            "CDI/2336",     // CD-I data
+                            "CDI/2352")     // CD-I data
     }
 
     /**
