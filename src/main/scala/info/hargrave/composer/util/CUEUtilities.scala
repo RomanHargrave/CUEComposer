@@ -174,7 +174,12 @@ trait CUEUtilities {
         def fileType = Option(data.getFileType)
         def fileType_=(name: Option[String]) = data.setFileType(name.orNull)
 
-        def trackData = data.getTrackData
+        def trackData: Seq[TrackData] = data.getTrackData
+        def trackData_=(newData: Seq[TrackData]) = {
+            data.getTrackData.clear()
+            data.getTrackData.addAll(newData)
+        }
+
 
         def parent = data.getParent
         def parent_=(sheet: CueSheet) = data.setParent(sheet)
