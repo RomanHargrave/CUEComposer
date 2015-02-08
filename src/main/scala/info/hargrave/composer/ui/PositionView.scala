@@ -39,13 +39,13 @@ class PositionView private() extends HBox with Editable {
     val converterProperty = ObjectProperty(new NumberStringConverter)
 
     private val minuteSpinner = new NumberSpinner(0, 99) {
-        valueProperty.bind(minutesProperty)
+        minutesProperty.onChange { setValue(minutesProperty.value) }
     }
     private val secondSpinner = new NumberSpinner(0, 99) {
-        valueProperty.bind(secondsProperty)
+        secondsProperty.onChange { setValue(secondsProperty.value) }
     }
     private val frameSpinner = new NumberSpinner(0, 75) {
-        valueProperty.bind(framesProperty)
+        framesProperty.onChange { setValue(framesProperty.value) }
     }
 
     minuteSpinner.editableProperty.bind(editableProperty)
