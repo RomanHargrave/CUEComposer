@@ -44,8 +44,11 @@ object PositionTableCell {
                                 cancelEdit()
                             case _ =>
                         }
+
                     }
                 })
+
+                positionView.get.editableProperty.bind(editableProperty())
             }
 
             positionView.get.value = position.get
@@ -56,7 +59,7 @@ object PositionTableCell {
 
         override def cancelEdit(): Unit = {
             setGraphic(null)
-            setText(position.get.formatted)
+            setText(position.getOrElse(new Position).formatted)
             super.cancelEdit()
         }
 

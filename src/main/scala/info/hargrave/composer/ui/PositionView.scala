@@ -40,7 +40,8 @@ class PositionView private() extends HBox with Editable {
 
     private val minuteSpinner = new NumberSpinner(0, 99) {
         minutesProperty.onChange { setValue(minutesProperty.value) }
-        editableProperty.onChange { disable = !isEditable }
+        editableProperty.onChange {   logger.trace(s"isEditble = $isEditable")
+                                      disable = !isEditable }
     }
     private val secondSpinner = new NumberSpinner(0, 99) {
         secondsProperty.onChange { setValue(secondsProperty.value) }

@@ -1,5 +1,8 @@
 package info.hargrave.composer.ui
 
+import javafx.beans.binding.{Bindings, ListBinding}
+import javafx.collections.ObservableList
+
 import info.hargrave.composer.ui.PromptInterface.PromptType
 import jwbroek.cuelib.{Position, Index}
 
@@ -16,15 +19,15 @@ import info.hargrave.composer.util.CUEUtilities._
 /**
  * Provides a TableView implementation for viewing editing lists of indices ([[jwbroek.cuelib.Index]])
  */
-class IndexTableView(indices: Seq[Index]) extends VBox with Editable {
-
-    // Toolbar Setup ---------------------------------------------------------------------------------------------------
-
-    private val toolbar = new ToolBar {
-        visible.bind(editableProperty)
+class IndexTableView private() extends VBox with Editable {
+    
+    val indices = ObservableBuffer[Index](Seq())
+    
+    def this(initialIndices: Seq[Index]) = {
+        this()
+        
+        indices ++= initialIndices
     }
-
-    toolbar.items = Seq(new Button("Dummy Text"))
 
     // TableView setup -------------------------------------------------------------------------------------------------
 
@@ -82,10 +85,40 @@ class IndexTableView(indices: Seq[Index]) extends VBox with Editable {
     }
 
     indexView.columns ++= Seq(indexNumberColumn, indexPositionColumn)
-    indexView.items = ObservableBuffer(indices)
+    indexView.items = indices
+
+    // Toolbar Setup ---------------------------------------------------------------------------------------------------
+
+    private val toolbar = new ToolBar {
+        visible.bind(editableProperty)
+    }
+    private val btnAddIndex = new Button(t"ui.common.verb_add") {
+
+        indices.onChange { disable = indices.size >= 99 }
+        onAction = () => {
+            indices += new Index(largestIndex, new Position())
+        }
+    }
+    private val btnRemIndex = new Button(t"ui.common.verb_remove") {
+
+        def updateDisableState(): Unit = {
+            disable = indices.size <= 1 || indexView.selectionModel.value.isEmpty
+        }
+
+        indices.onChange { updateDisableState() } // Minimum 1 index per track
+        indexView.selectionModel.value.selectedItems.onChange { updateDisableState() }
+
+        onAction = () => indexView.selectionModel.value.selectedItems.foreach(indices.remove(_))
+    }
+
+    toolbar.items = Seq(btnAddIndex, btnRemIndex)
 
     // VBox Setup ------------------------------------------------------------------------------------------------------
 
     children = Seq(toolbar, indexView)
+
+    // API -------------------------------------------------------------------------------------------------------------
+
+    final def largestIndex: Int = indices.sortWith(_.getNumber > _.getNumber).last.getNumber
 
 }
