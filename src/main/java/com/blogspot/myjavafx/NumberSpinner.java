@@ -96,7 +96,6 @@ public class NumberSpinner extends TextField {
             @Override
             public void changed(ObservableValue<? extends Scene> observableValue, Scene scene, Scene scene1) {
                 if (scene1 != null) {
-                    System.out.println(getClass().getResource("/spinner/skin.css").toExternalForm());
                     scene1.getStylesheets().add(getClass().getResource("/spinner/skin.css").toExternalForm());
                 }
             }
