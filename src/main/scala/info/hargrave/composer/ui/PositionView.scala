@@ -39,15 +39,15 @@ class PositionView private() extends HBox with Editable {
     val converterProperty = ObjectProperty(new NumberStringConverter)
 
     private val minuteSpinner = new NumberSpinner(0, 99) {
-        minutesProperty.onChange { setValue(minutesProperty.value) }
+        valueProperty().bindBidirectional(minutesProperty)
         editableProperty.onChange { disable = !isEditable }
     }
     private val secondSpinner = new NumberSpinner(0, 99) {
-        secondsProperty.onChange { setValue(secondsProperty.value) }
+        valueProperty().bindBidirectional(secondsProperty)
         editableProperty.onChange { disable = !isEditable }
     }
     private val frameSpinner = new NumberSpinner(0, 75) {
-        framesProperty.onChange { setValue(framesProperty.value) }
+        valueProperty().bindBidirectional(framesProperty)
         editableProperty.onChange { disable = !isEditable }
     }
 
@@ -72,13 +72,13 @@ class PositionView private() extends HBox with Editable {
                          secondSpinner, secondSeparator,
                          frameSpinner)
 
-    final def minutes = converterProperty.value.fromString(Option(minuteSpinner.getText).getOrElse("0")).intValue
+    final def minutes = minutesProperty.value.intValue
     final def minutes_=(int: Int) = minutesProperty.value = int
 
-    final def seconds = converterProperty.value.fromString(Option(secondSpinner.getText).getOrElse("0")).intValue
+    final def seconds = secondsProperty.value.intValue
     final def seconds_=(int: Int) = secondsProperty.value = int
 
-    final def frames = converterProperty.value.fromString(Option(frameSpinner.getText).getOrElse("0")).intValue
+    final def frames = framesProperty.value.intValue
     final def frames_=(int: Int) = framesProperty.value = int
 
     final def value = new Position(minutes, seconds, frames)

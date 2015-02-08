@@ -21,6 +21,11 @@ import scalafx.util.converter.NumberStringConverter
 class NumberSpinnerCell[S](override val delegate: JFXImpl[S] = new JFXImpl[S])
         extends TableCell[S, Number](delegate) with SFXDelegate[JFXImpl[S]] {
 
+    final def valueProperty = delegate.valueProperty
+
+    final def value = valueProperty.value
+    final def value_=(num: Number) = valueProperty.value = num
+
     final def lowerBound = delegate.lowerBound.value
     final def lowerBound_=(number: Number) = delegate.lowerBound.value = number
 
@@ -39,7 +44,7 @@ object NumberSpinnerCell {
 
     final class JFXImpl[S] extends JFXTableCell[S, Number] {
 
-        private var value: Option[Number] = None
+        private[NumberSpinnerCell] val valueProperty: ObjectProperty[Number] = new ObjectProperty[Number]
         private[NumberSpinnerCell] var spinner: Option[NumberSpinner] = None
 
         private[NumberSpinnerCell] val lowerBound   = new ObjectProperty[Number]
@@ -52,9 +57,7 @@ object NumberSpinnerCell {
             super.startEdit()
             if(spinner.isEmpty) {
                 spinner = Some(new NumberSpinner {
-                    setMinValue(lowerBound.value)
                     minValueProperty.bind(lowerBound)
-                    setMaxValue(upperBound.value)
                     maxValueProperty.bind(upperBound)
 
                     setNumberStringConverter(stringConverter.value)
@@ -75,7 +78,7 @@ object NumberSpinnerCell {
                 })
             }
 
-            spinner.get.setValue(value.orNull)
+            spinner.get.valueProperty().bindBidirectional(valueProperty)
 
             setText(null)
             setGraphic(spinner.get)
@@ -87,18 +90,18 @@ object NumberSpinnerCell {
         override def cancelEdit(): Unit = {
             super.cancelEdit()
             setGraphic(null)
-            setText(stringConverter.value.toString(value.get))
+            setText(stringConverter.value.toString(valueProperty.value))
         }
 
         override def updateItem(item: Number, empty: Boolean): Unit = empty match {
             case true =>
                 setText(null)
                 setGraphic(null)
-                value = None
+                valueProperty.setValue(null)
                 spinner = None
                 super.updateItem(item, empty)
             case false =>
-                value = Option(item)
+                valueProperty.setValue(item)
                 setText(stringConverter.value.toString(item))
                 setGraphic(null)
                 super.updateItem(item, empty)

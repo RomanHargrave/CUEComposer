@@ -1,5 +1,7 @@
 package com.blogspot.myjavafx;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -90,6 +92,14 @@ public class NumberSpinner extends TextField {
     public NumberSpinner() {
         getStyleClass().add("number-spinner");
         setFocusTraversable(false);
+
+        // Update 'value' property
+        textProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                valueProperty().setValue(getNumberStringConverter().fromString(getText()));
+            }
+        });
 
         // Workaround this bug: https://forums.oracle.com/forums/thread.jspa?forumID=1385&threadID=2430102
         sceneProperty().addListener(new ChangeListener<Scene>() {
