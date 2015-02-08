@@ -46,6 +46,8 @@ class TrackDataView(trackData: TrackData) extends SplitPane with Editable {
     private val indexView = new IndexTableView(trackData.getIndices.asScala) {
         editable    = true
         vgrow       = Priority.Always
+
+        indices.onChange { trackData.indices = indices }
     }
 
     rightPane.children.add(indexView)
