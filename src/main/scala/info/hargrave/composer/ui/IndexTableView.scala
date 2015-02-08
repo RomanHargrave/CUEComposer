@@ -93,9 +93,6 @@ class IndexTableView private() extends VBox with Editable {
     private val toolbar     = new ToolBar {
         visible.bind(editableProperty)
     }
-    private val idxTbLabel  = new Label(t"ui.common.noun_indices") {
-        alignment = Pos.CenterRight
-    }
     private val btnAddIndex = new Button(t"ui.common.verb_add") {
 
         indices.onChange { disable = indices.size >= 99 }
@@ -115,7 +112,7 @@ class IndexTableView private() extends VBox with Editable {
         onAction = () => indexView.selectionModel.value.selectedItems.foreach(indices.remove(_))
     }
 
-    toolbar.items = Seq(btnAddIndex, btnRemIndex, idxTbLabel)
+    toolbar.items = Seq(btnAddIndex, btnRemIndex)
 
     // VBox Setup ------------------------------------------------------------------------------------------------------
 
