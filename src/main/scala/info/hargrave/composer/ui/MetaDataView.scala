@@ -2,11 +2,13 @@ package info.hargrave.composer.ui
 
 //import javafx.scene.control.TableColumn.CellEditEvent
 
+import javafx.scene.Node
+
 import info.hargrave.composer.util.CUEUtilities
 
 import scalafx.beans.property._
 import scalafx.collections.ObservableBuffer
-import scalafx.geometry.Pos
+import scalafx.geometry.{Orientation, Pos}
 import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
 import scalafx.scene.control.cell.{TextFieldTableCell, ComboBoxTableCell}
 import scalafx.scene.control._
@@ -68,20 +70,9 @@ class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
         access.value = Some(event.newValue)
     }
 
-    // TableView setup -------------------------------------------------------------------------------------------------
-
-    /*
-     * Filter the initial list of display items to include only those with defined values
-     */
-    dataTableView.items = ObservableBuffer(dataSource.dataAccess.toSeq.filter(_.access.value.isDefined))
-    dataTableView.items.value.onChange({ synchronizeAvailableFields() })
-
     // Toolbar Setup ---------------------------------------------------------------------------------------------------
 
     private val editingToolBar  = new ToolBar()
-    private val mdToolBarLabel  = new Label(t"ui.common.noun_metadata") {
-        alignment = Pos.CenterRight
-    }
     private val addPropertyBtn  = new MenuButton {
         text = t"ui.common.verb_add"
 
@@ -98,7 +89,7 @@ class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
 
         text = t"ui.common.verb_remove"
     }
-    editingToolBar.items ++= Seq(mdToolBarLabel, addPropertyBtn, remPropertyBtn)
+    editingToolBar.items ++= Seq[Node](addPropertyBtn, remPropertyBtn)
 
     editingToolBar.visible.bind(editableProperty)
 
@@ -108,6 +99,14 @@ class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
 
     children += editingToolBar
     children += dataTableView
+
+    // TableView setup -------------------------------------------------------------------------------------------------
+
+    /*
+     * Filter the initial list of display items to include only those with defined values
+     */
+    dataTableView.items = ObservableBuffer(dataSource.dataAccess.toSeq.filter(_.access.value.isDefined))
+    dataTableView.items.value.onChange({ synchronizeAvailableFields() })
 
     // Utility Methods -------------------------------------------------------------------------------------------------
 
@@ -136,4 +135,5 @@ class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
     }
 
     synchronizeAvailableFields()
+    remPropertyBtn.updateDisabled()
 }
