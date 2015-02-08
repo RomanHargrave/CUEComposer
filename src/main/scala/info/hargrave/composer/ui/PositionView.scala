@@ -56,11 +56,11 @@ class PositionView private() extends HBox with Editable {
     secondSpinner.numberStringConverterProperty.bind(converterProperty)
     frameSpinner.numberStringConverterProperty.bind(converterProperty)
 
-    minuteSpinner.prefWidthProperty.bind(prefWidth / 3)
-    secondSpinner.prefWidthProperty.bind(prefWidth / 3)
-    frameSpinner.prefWidthProperty.bind(prefWidth / 3)
+    minuteSpinner.prefWidthProperty.bind(minWidth / 3)
+    secondSpinner.prefWidthProperty.bind(minWidth / 3)
+    frameSpinner.prefWidthProperty.bind(minWidth / 3)
 
-    prefWidth = 200
+    minWidth = 200
 
     final def converter = converterProperty.value
     final def converter_=(newValue: NumberStringConverter) = converterProperty.value = newValue
