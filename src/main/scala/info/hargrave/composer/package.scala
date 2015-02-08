@@ -13,6 +13,11 @@ import scalafx.stage.Stage
 package object composer extends AnyRef with Localization with PropertyStrings with RegexStrings {
 
     /**
+     * Provides a general purpose prompts access
+     */
+    object Prompts extends FXPromptInterface
+
+    /**
      * Provides the default logger to use
      */
     implicit val logger: Logger = Logger("info.hargrave.composer")
