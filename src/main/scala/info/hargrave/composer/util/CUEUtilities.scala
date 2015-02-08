@@ -219,7 +219,11 @@ trait CUEUtilities {
 
         def index(num: Int) = Option(data.getIndex(num))
 
-        def indices: MutableSeq[Index] = data.getIndices
+        def indices: Seq[Index] = data.getIndices
+        def indices_=(seq: Seq[Index]): Unit = {
+            data.getIndices.clear()
+            data.getIndices.addAll(seq)
+        }
 
         def flags: Iterable[String] = data.getFlags
         def flags_=(newFlags: Iterable[String]) = {
