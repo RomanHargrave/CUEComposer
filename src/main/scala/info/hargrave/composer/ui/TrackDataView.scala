@@ -81,14 +81,22 @@ class TrackDataView(trackData: TrackData) extends SplitPane with Editable {
         synchronizeItems()
     }
 
-    private val pregapPosition  = new PositionView(trackData.pregap.getOrElse(new Position))
+    private val pregapPosition  = new PositionView(trackData.pregap.getOrElse(new Position)) {
+        minutesProperty.onChange { trackData.pregap.get.minutes = Option(minutes) }
+        secondsProperty.onChange { trackData.pregap.get.seconds = Option(seconds) }
+        framesProperty.onChange { trackData.pregap.get.frames = Option(frames) }
+    }
     private val pregapCheck     = new CheckBox(t"ui.td_view.pregap") {
         selected = trackData.pregap.isDefined
         selected.onChange { trackData.pregap = if(selected.value) Option(pregapPosition.value) else None }
         pregapPosition.editableProperty.bind(selected)
     }
 
-    private val postgapPosition = new PositionView(trackData.postgap.getOrElse(new Position))
+    private val postgapPosition = new PositionView(trackData.postgap.getOrElse(new Position)) {
+        minutesProperty.onChange { trackData.postgap.get.minutes = Option(minutes) }
+        secondsProperty.onChange { trackData.postgap.get.seconds = Option(seconds) }
+        framesProperty.onChange { trackData.postgap.get.frames = Option(frames) }
+    }
     private val postgapCheck    = new CheckBox(t"ui.td_view.postgap") {
         selected = trackData.postgap.isDefined
         selected.onChange { trackData.postgap = if(selected.value) Option(postgapPosition.value) else None }
