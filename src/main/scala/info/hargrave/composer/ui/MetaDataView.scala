@@ -37,10 +37,12 @@ class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
     }
 
     private val tableDataKeyCol = new TableColumn[MetaDataAssociation, String] {
-        text = t"ui.md_view.data_col"
+        text        = t"ui.md_view.data_col"
+        minWidth    = 150
     }
     private val tableDataValCol = new TableColumn[MetaDataAssociation, String] {
-        text = t"ui.md_view.value_col"
+        text        = t"ui.md_view.value_col"
+        minWidth    = 200
     }
     dataTableView.columns ++= Seq(tableDataKeyCol, tableDataValCol)
     dataTableView.editable.bind(editableProperty)
