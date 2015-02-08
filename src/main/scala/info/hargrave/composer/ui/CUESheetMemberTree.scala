@@ -3,9 +3,10 @@ package info.hargrave.composer.ui
 import jwbroek.cuelib.{TrackData, FileData, CueSheet}
 
 import scalafx.Includes._
-import scalafx.beans.property.BooleanProperty
+import scalafx.collections.ObservableBuffer
 import scalafx.event.subscriptions.Subscription
-import scalafx.scene.control.{TreeItem, TreeView, ToolBar}
+import scalafx.scene.Node
+import scalafx.scene.control._
 import scalafx.scene.layout.{Priority, VBox, BorderPane}
 
 import info.hargrave.composer.ui.CUESheetMemberTree.CueEntryCell
@@ -22,48 +23,104 @@ import scala.collection.JavaConversions._
  *
  * When editable is true, it will display a toolbar that allows for addition and removal of sheet members.
  */
-class CUESheetMemberTree(sheet: CueSheet) extends VBox {
+class CUESheetMemberTree(sheet: CueSheet) extends VBox with Editable {
 
-    val editableProperty = new BooleanProperty
+    val filesProperty   = ObservableBuffer(Seq[FileData]())
 
-    private val elementsToolbar = new ToolBar()
-    children += elementsToolbar
-    elementsToolbar.visible.bind(editableProperty)
+    // Element List ----------------------------------------------------------------------------------------------------
 
     private val elementsList = new TreeView[Either[FileData, TrackData]] {
-        root = new TreeItem
-        showRoot = false
-        cellFactory = {view => new CueEntryCell}
-        vgrow   = Priority.Always
+        root        = new TreeItem
+        showRoot    = false
+        cellFactory = view => new CueEntryCell
+        vgrow       = Priority.Always
     }
-    children += elementsList
 
-    // Data Setup ------------------------------------------------------------------------------------------------------
+    private def synchronizeData(): Unit = {
 
-    /*
-     * For each file entry create an item, then construct a sequence of items for each track entry and assign them to
-     * the file item as children.
-     */
-    private val fileEntries = sheet.getFileData.map({data =>
-        val fileItem = new TreeItem[Either[FileData, TrackData]](Left(data))
+        /*
+         * For each file entry create an item, then construct a sequence of items for each track entry and assign them
+         * to the file item as children.
+         */
+        elementsList.root.value.children = filesProperty.map(data =>
+            new TreeItem[Either[FileData, TrackData]](Left(data)) {
+                children = data.trackData.map(tData => new TreeItem[Either[FileData, TrackData]](Right(tData)))
+            })
+    }
 
-        fileItem.children ++= data.getTrackData.map({track =>
-            new TreeItem[Either[FileData, TrackData]](Right(track)).delegate
-        })
+    filesProperty.onChange { synchronizeData() }
 
-        fileItem.delegate
-    })
+    // Toolbar ---------------------------------------------------------------------------------------------------------
 
-    elementsList.root.value.children ++= fileEntries
+    private val elementsToolbar = new ToolBar {
+        visible.bind(editableProperty)
+    }
+    private val addMemberBtn    = new MenuButton {
+
+        text    = t"ui.common.verb_add"
+
+        val fileMemberOption    = new MenuItem {
+
+            text = t"cuesheet.file_entry"
+
+            def updateDisabled(): Unit = {
+                disable = filesProperty.length >= 99
+            }
+
+            filesProperty.onChange { updateDisabled() }
+            onAction = () => filesProperty += new FileData(sheet)
+        }
+
+        val trackMemberOption   = new MenuItem {
+
+            text = t"cuesheet.track_entry"
+
+            def updateDisabled(): Unit = disable = selectedItem match {
+                case Some(Left(fileData)) => fileData.trackData.length >= 99
+                case _ => false
+            }
+
+            onAction = () => selectedItem.get.left.get.getTrackData.add(new TrackData(selectedItem.get.left.get))
+
+            filesProperty.onChange { updateDisabled() }
+            onSelectionChanged {(ign: Option[Either[FileData, TrackData]]) => updateDisabled() }
+        }
+
+        items   = Seq(fileMemberOption, trackMemberOption)
+    }
+    private val delMemberBtn    = new Button {
+
+        def updateDisabled(): Unit = {
+            disable = selectedItem.isEmpty || filesProperty.isEmpty
+        }
+
+        filesProperty.onChange { updateDisabled() }
+        onSelectionChanged {(ign: Option[Either[FileData, TrackData]]) => updateDisabled() }
+
+        onAction = () => selectedItem match {
+            case Some(Left(fileData))   =>
+                filesProperty.remove(fileData)
+            case Some(Right(trackData)) =>
+                trackData.parent.getTrackData.remove(trackData)
+                synchronizeData()
+        }
+
+        text = t"ui.common.verb_remove"
+    }
+
+    elementsToolbar.items = Seq(addMemberBtn, delMemberBtn)
+
+    // Setup Self ------------------------------------------------------------------------------------------------------
+
+    children = Seq[Node](elementsToolbar, elementsList)
+
+    filesProperty.addAll(sheet.fileData)
 
     // Component API ---------------------------------------------------------------------------------------------------
 
-    final def editable = editableProperty.value
-    final def editable_=(bool: Boolean) = editableProperty.value = bool
-
-    final def selectedItem = elementsList.selectionModel.value.getSelectedItem.value match {
+    final def selectedItem = elementsList.selectionModel.value.getSelectedItem match {
         case null       => None
-        case treeItem   => Option(treeItem.value)
+        case propItem   => Option(propItem.value.value)
     }
 
     final def onSelectionChanged(op: Option[Either[FileData, TrackData]]=>_): Subscription =
