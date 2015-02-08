@@ -6,6 +6,7 @@ import info.hargrave.composer.util.CUEUtilities
 
 import scalafx.beans.property._
 import scalafx.collections.ObservableBuffer
+import scalafx.geometry.Pos
 import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
 import scalafx.scene.control.cell.{TextFieldTableCell, ComboBoxTableCell}
 import scalafx.scene.control._
@@ -22,15 +23,6 @@ import scalafx.util.converter.DefaultStringConverter
  * Provides editing functionality for [[info.hargrave.composer.util.CUEUtilities.HasMetaData]]
  */
 class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
-
-    private val editingToolBar  = new ToolBar()
-    private val addPropertyBtn  = new MenuButton {
-        text = t"ui.common.verb_add"
-    }
-    private val remPropertyBtn  = new Button {
-        text = t"ui.common.verb_remove"
-    }
-    editingToolBar.items ++= Seq(addPropertyBtn, remPropertyBtn)
 
     private val dataTableView   = new TableView[MetaDataAssociation]() {
         vgrow = Priority.Always
@@ -76,40 +68,52 @@ class MetaDataView(dataSource: HasMetaData) extends VBox with Editable {
         access.value = Some(event.newValue)
     }
 
-    // Control Setup ---------------------------------------------------------------------------------------------------
-
-    children += editingToolBar
-    children += dataTableView
-
     // TableView setup -------------------------------------------------------------------------------------------------
 
     /*
      * Filter the initial list of display items to include only those with defined values
      */
     dataTableView.items = ObservableBuffer(dataSource.dataAccess.toSeq.filter(_.access.value.isDefined))
-    dataTableView.items.value.onChange({synchronizeAvailableFields()})
+    dataTableView.items.value.onChange({ synchronizeAvailableFields() })
 
     // Toolbar Setup ---------------------------------------------------------------------------------------------------
+
+    private val editingToolBar  = new ToolBar()
+    private val mdToolBarLabel  = new Label(t"ui.common.noun_metadata") {
+        alignment = Pos.CenterRight
+    }
+    private val addPropertyBtn  = new MenuButton {
+        text = t"ui.common.verb_add"
+
+        items.onChange { disable = items.isEmpty }
+    }
+    private val remPropertyBtn  = new Button {
+
+        def updateDisabled(): Unit = {
+            disable = dataTableView.selectionModel.value.isEmpty || dataTableView.items.value.isEmpty
+        }
+
+        dataTableView.items.value.onChange { updateDisabled() }
+        dataTableView.selectionModel.value.selectedItems.onChange { updateDisabled() }
+
+        text = t"ui.common.verb_remove"
+    }
+    editingToolBar.items ++= Seq(mdToolBarLabel, addPropertyBtn, remPropertyBtn)
+
     editingToolBar.visible.bind(editableProperty)
 
-    remPropertyBtn.onAction = () => {
-        val removedItem = Option(dataTableView.selectionModel.value.selectedItemProperty.value)
-        dataTableView.items.value.remove(dataTableView.selectionModel.value.getSelectedIndex)
+    remPropertyBtn.onAction = () => dataTableView.selectionModel.value.selectedItems.foreach(removeItem)
 
-        removedItem match {
-            case Some(association)  =>
-                association.access.value = None
-            case None   =>
-                logger.debug("Invalid attempt to remove a non-existant table entry")
-        }
-    }
+    // Control Setup ---------------------------------------------------------------------------------------------------
 
-    dataTableView.selectionModel.value.selectedIndex.onChange({updateRemoveButtonState()})
+    children += editingToolBar
+    children += dataTableView
 
     // Utility Methods -------------------------------------------------------------------------------------------------
 
-    private def updateRemoveButtonState(): Unit = {
-        remPropertyBtn.disable = dataTableView.selectionModel.value.selectedItemProperty.value == null
+    private def removeItem(assoc: MetaDataAssociation): Unit = {
+        assoc.access.value = None
+        dataTableView.items.value.remove(assoc)
     }
 
     private def synchronizeAvailableFields(): Unit = {

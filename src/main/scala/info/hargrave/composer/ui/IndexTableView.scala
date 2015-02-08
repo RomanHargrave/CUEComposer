@@ -8,8 +8,9 @@ import jwbroek.cuelib.{Position, Index}
 
 import scalafx.beans.property.ObjectProperty
 import scalafx.collections.ObservableBuffer
+import scalafx.geometry.Pos
 import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
-import scalafx.scene.control.{Button, ToolBar, TableColumn, TableView}
+import scalafx.scene.control._
 import scalafx.scene.layout.{Priority, VBox}
 import scalafx.Includes._
 
@@ -89,8 +90,11 @@ class IndexTableView private() extends VBox with Editable {
 
     // Toolbar Setup ---------------------------------------------------------------------------------------------------
 
-    private val toolbar = new ToolBar {
+    private val toolbar     = new ToolBar {
         visible.bind(editableProperty)
+    }
+    private val idxTbLabel  = new Label(t"ui.common.noun_indices") {
+        alignment = Pos.CenterRight
     }
     private val btnAddIndex = new Button(t"ui.common.verb_add") {
 
@@ -111,7 +115,7 @@ class IndexTableView private() extends VBox with Editable {
         onAction = () => indexView.selectionModel.value.selectedItems.foreach(indices.remove(_))
     }
 
-    toolbar.items = Seq(btnAddIndex, btnRemIndex)
+    toolbar.items = Seq(btnAddIndex, btnRemIndex, idxTbLabel)
 
     // VBox Setup ------------------------------------------------------------------------------------------------------
 
