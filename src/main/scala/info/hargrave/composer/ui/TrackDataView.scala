@@ -84,9 +84,9 @@ class TrackDataView(trackData: TrackData) extends SplitPane with Editable {
     }
 
     private val pregapPosition  = new PositionView(trackData.pregap.getOrElse(new Position)) {
-        minutesProperty.onChange { trackData.pregap.get.minutes = Option(minutes) }
-        secondsProperty.onChange { trackData.pregap.get.seconds = Option(seconds) }
-        framesProperty.onChange { trackData.pregap.get.frames = Option(frames) }
+        minutesProperty.onChange { if(trackData.pregap.isDefined) trackData.pregap.get.minutes = Option(minutes) }
+        secondsProperty.onChange { if(trackData.pregap.isDefined) trackData.pregap.get.seconds = Option(seconds) }
+        framesProperty.onChange { if(trackData.pregap.isDefined) trackData.pregap.get.frames = Option(frames) }
     }
     private val pregapCheck     = new CheckBox(t"ui.td_view.pregap") {
         selected = trackData.pregap.isDefined
@@ -95,9 +95,9 @@ class TrackDataView(trackData: TrackData) extends SplitPane with Editable {
     }
 
     private val postgapPosition = new PositionView(trackData.postgap.getOrElse(new Position)) {
-        minutesProperty.onChange { trackData.postgap.get.minutes = Option(minutes) }
-        secondsProperty.onChange { trackData.postgap.get.seconds = Option(seconds) }
-        framesProperty.onChange { trackData.postgap.get.frames = Option(frames) }
+        minutesProperty.onChange { if(trackData.postgap.isDefined) trackData.postgap.get.minutes = Option(minutes) }
+        secondsProperty.onChange { if(trackData.postgap.isDefined) trackData.postgap.get.seconds = Option(seconds) }
+        framesProperty.onChange { if(trackData.postgap.isDefined) trackData.postgap.get.frames = Option(frames) }
     }
     private val postgapCheck    = new CheckBox(t"ui.td_view.postgap") {
         selected = trackData.postgap.isDefined
