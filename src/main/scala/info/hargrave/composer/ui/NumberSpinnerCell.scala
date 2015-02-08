@@ -81,6 +81,11 @@ object NumberSpinnerCell {
             setGraphic(spinner.get)
         }
 
+        /*
+         * Unlink the behaviour of commitEdit() would suggest, cancelEdit() does not result in a call to updateItem()
+         */
+        override def cancelEdit(): Unit = updateItem(value.orNull, isEmpty) // Bridge to updateItem in an attempt to dry out logic
+
         override def updateItem(item: Number, empty: Boolean): Unit = empty match {
             case true =>
                 setText(null)
