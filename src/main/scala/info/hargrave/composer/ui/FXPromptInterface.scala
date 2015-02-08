@@ -44,7 +44,7 @@ object FXPromptInterface extends AnyRef with Localization {
         case PromptType.WARNING => Dialogs.showWarningDialog
     }
 }
-final class FXPromptInterface extends PromptInterface {
+class FXPromptInterface extends PromptInterface {
     import info.hargrave.composer.stage
     import info.hargrave.composer.ui.FXPromptInterface._
 
