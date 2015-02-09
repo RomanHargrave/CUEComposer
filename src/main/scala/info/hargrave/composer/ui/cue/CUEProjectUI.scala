@@ -1,15 +1,13 @@
-package info.hargrave.composer.ui
+package info.hargrave.composer.ui.cue
 
 import info.hargrave.composer._
 import info.hargrave.composer.backend.manager.projects.CUEProject
+import info.hargrave.composer.ui.cue.FileDataView
 import info.hargrave.composer.util.CUEUtilities._
 import jwbroek.cuelib.{CueSheet, FileData, TrackData}
 
-import scala.collection.JavaConversions._
 import scalafx.Includes._
-import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Side
-import scalafx.scene.Node
 import scalafx.scene.control.TabPane.TabClosingPolicy
 import scalafx.scene.control._
 import scalafx.scene.layout._

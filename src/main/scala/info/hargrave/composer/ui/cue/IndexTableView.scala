@@ -1,21 +1,17 @@
-package info.hargrave.composer.ui
-
-import javafx.beans.binding.{Bindings, ListBinding}
-import javafx.collections.ObservableList
-
-import info.hargrave.composer.ui.PromptInterface.PromptType
-import jwbroek.cuelib.{Position, Index}
-
-import scalafx.beans.property.ObjectProperty
-import scalafx.collections.ObservableBuffer
-import scalafx.geometry.Pos
-import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
-import scalafx.scene.control._
-import scalafx.scene.layout.{Priority, VBox}
-import scalafx.Includes._
+package info.hargrave.composer.ui.cue
 
 import info.hargrave.composer._
+import info.hargrave.composer.ui.PromptInterface.PromptType
+import info.hargrave.composer.ui.{Editable, NumberSpinnerCell}
 import info.hargrave.composer.util.CUEUtilities._
+import jwbroek.cuelib.{Index, Position}
+
+import scalafx.Includes._
+import scalafx.beans.property.ObjectProperty
+import scalafx.collections.ObservableBuffer
+import scalafx.scene.control.TableColumn.{CellDataFeatures, CellEditEvent}
+import scalafx.scene.control._
+import scalafx.scene.layout.{Priority, VBox}
 
 /**
  * Provides a TableView implementation for viewing editing lists of indices ([[jwbroek.cuelib.Index]])

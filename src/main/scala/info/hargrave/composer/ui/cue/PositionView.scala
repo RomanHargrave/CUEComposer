@@ -1,12 +1,12 @@
-package info.hargrave.composer.ui
+package info.hargrave.composer.ui.cue
 
 import com.blogspot.myjavafx.NumberSpinner
-import info.hargrave.composer._
+import info.hargrave.composer.ui.Editable
 import info.hargrave.composer.util.CUEUtilities._
 import jwbroek.cuelib.Position
 
 import scalafx.Includes._
-import scalafx.beans.property.{ObjectProperty, BooleanProperty}
+import scalafx.beans.property.ObjectProperty
 import scalafx.scene.Node
 import scalafx.scene.control.Label
 import scalafx.scene.layout.HBox

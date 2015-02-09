@@ -3,6 +3,7 @@ package info.hargrave.composer.ui
 import info.hargrave.composer._
 import info.hargrave.composer.backend.manager.projects.CUEProject
 import info.hargrave.composer.ui.TabbedProjectUI.ProjectTab
+import info.hargrave.composer.ui.cue.CUEProjectUI
 import info.hargrave.composer.util.Localization
 
 import scala.collection.mutable.{Map => MutableMap}

@@ -1,16 +1,15 @@
-package info.hargrave.composer.ui
+package info.hargrave.composer.ui.cue
 
 import javafx.scene.control.{TableCell => JFXTableCell}
 
+import info.hargrave.composer.ui.cue.PositionTableCell.JFXImpl
 import info.hargrave.composer.util.CUEUtilities._
-import info.hargrave.composer.ui.PositionTableCell.JFXImpl
-
 import jwbroek.cuelib.Position
 
+import scalafx.Includes._
 import scalafx.delegate.SFXDelegate
 import scalafx.scene.control.TableCell
 import scalafx.scene.input.{KeyCode, KeyEvent}
-import scalafx.Includes._
 
 /**
  * Provides a TableCell that allows for the display and editing of a position

@@ -1,19 +1,18 @@
-package info.hargrave.composer.ui
-
-import jwbroek.cuelib.{Position, TrackData}
-
-import scalafx.collections.ObservableBuffer
-import scalafx.scene.control._
-import scalafx.scene.layout.{GridPane, VBox, Priority}
-import scalafx.Includes._
+package info.hargrave.composer.ui.cue
 
 import javafx.geometry.Insets
 import javafx.scene.control.{CheckMenuItem => JFXCheckMenuItem}
 
 import info.hargrave.composer._
+import info.hargrave.composer.ui.Editable
 import info.hargrave.composer.util.CUEUtilities._
+import jwbroek.cuelib.{Position, TrackData}
 
 import scala.collection.JavaConverters._
+import scalafx.Includes._
+import scalafx.collections.ObservableBuffer
+import scalafx.scene.control._
+import scalafx.scene.layout.{GridPane, Priority, VBox}
 
 /**
  * Date: 2/3/15

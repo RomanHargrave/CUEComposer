@@ -1,19 +1,18 @@
-package info.hargrave.composer.ui
+package info.hargrave.composer.ui.cue
 
-import jwbroek.cuelib.{TrackData, FileData, CueSheet}
+import info.hargrave.composer._
+import info.hargrave.composer.ui.cue.CUESheetMemberTree.CueEntryCell
+import info.hargrave.composer.ui.{CustomTreeCell, Editable}
+import info.hargrave.composer.util.CUEUtilities._
+import jwbroek.cuelib.{CueSheet, FileData, TrackData}
 
+import scala.collection.JavaConversions._
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.event.subscriptions.Subscription
 import scalafx.scene.Node
 import scalafx.scene.control._
-import scalafx.scene.layout.{Priority, VBox, BorderPane}
-
-import info.hargrave.composer.ui.CUESheetMemberTree.CueEntryCell
-import info.hargrave.composer.util.CUEUtilities._
-import info.hargrave.composer._
-
-import scala.collection.JavaConversions._
+import scalafx.scene.layout.{Priority, VBox}
 
 /**
  * Displays a CUE Sheet as a two-level TreeView[Either[FileData,TrackData]] from which the user can select file sections,

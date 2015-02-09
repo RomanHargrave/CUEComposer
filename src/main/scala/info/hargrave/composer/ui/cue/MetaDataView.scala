@@ -1,24 +1,20 @@
-package info.hargrave.composer.ui
+package info.hargrave.composer.ui.cue
 
 //import javafx.scene.control.TableColumn.CellEditEvent
 
 import javafx.scene.Node
 
-import info.hargrave.composer.util.CUEUtilities
-
-import scalafx.beans.property._
-import scalafx.collections.ObservableBuffer
-import scalafx.geometry.{Orientation, Pos}
-import scalafx.scene.control.TableColumn.{CellEditEvent, CellDataFeatures}
-import scalafx.scene.control.cell.{TextFieldTableCell, ComboBoxTableCell}
-import scalafx.scene.control._
-import scalafx.scene.layout.{Priority, VBox, BorderPane}
-import scalafx.Includes._
-
 import info.hargrave.composer._
+import info.hargrave.composer.ui.Editable
 import info.hargrave.composer.util.CUEUtilities._
 
-import scalafx.util.StringConverter
+import scalafx.Includes._
+import scalafx.beans.property._
+import scalafx.collections.ObservableBuffer
+import scalafx.scene.control.TableColumn.{CellDataFeatures, CellEditEvent}
+import scalafx.scene.control._
+import scalafx.scene.control.cell.TextFieldTableCell
+import scalafx.scene.layout.{Priority, VBox}
 import scalafx.util.converter.DefaultStringConverter
 
 /**
