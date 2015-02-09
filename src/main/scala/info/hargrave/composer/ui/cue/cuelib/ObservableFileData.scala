@@ -10,6 +10,7 @@ import scalafx.beans.property.{ObjectProperty, StringProperty}
 import scalafx.collections.ObservableBuffer
 
 import scala.collection.JavaConverters._
+import scalafx.event.subscriptions.Subscription
 
 
 /**
@@ -60,14 +61,26 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
 
     override def getAllIndices: util.List[Index] = trackData.map(track => track.getIndices.asScala).flatten.asJava
 
-    def bind(subordinate: FileData): Unit = {
-        fileProperty.onChange { subordinate.setFile(this.getFile) }
-        fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) }
-        trackData.onChange {
-                               subordinate.getTrackData.clear()
-                               subordinate.getTrackData.addAll(getTrackData)
-                               ()
-                           }
+    /**
+     * Bind the fields of a subordinate FileData to the corresponding properties in this implementation
+     * and return a subscription to cancel the binding
+     *
+     * @param subordinate subordinate filedata
+     * @return binding subscription
+     */
+    def bind(subordinate: FileData): Subscription = {
+        val subscriptions = Seq(fileProperty.onChange { subordinate.setFile(this.getFile) },
+                                fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) },
+                                trackData.onChange {
+                                                       subordinate.getTrackData.clear()
+                                                       subordinate.getTrackData.addAll(getTrackData)
+                                                       ()
+                                                   })
+
+
+        new Subscription {
+            override def cancel(): Unit = subscriptions.foreach(_.cancel())
+        }
     }
 }
 object ObservableFileData extends AnyRef with Memoization {
