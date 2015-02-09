@@ -15,8 +15,8 @@ final class ObservableIndex extends Index with Observability {
     val numberProperty      = IntegerProperty(super.getNumber)
     val positionProperty    = ObjectProperty(super.getPosition)
 
-    numberProperty.onChange     { invalidate() }
-    positionProperty.onChange   { invalidate() }
+    numberProperty.invalidatesParent()
+    positionProperty.invalidatesParent()
 
     /**
      * Create an observable clone with specified index's fields
@@ -59,7 +59,7 @@ final class ObservableIndex extends Index with Observability {
      * @return binding subscription
      */
     def bind(subordinate: Index): Subscription =  {
-        val subscribers = Seq(numberProperty.onChange   { subordinate.setNumber(getNumber) },
+        val subscribers = Set(numberProperty.onChange   { subordinate.setNumber(getNumber) },
                               positionProperty.onChange { subordinate.setPosition(getPosition) })
 
         new Subscription {
