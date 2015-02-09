@@ -57,12 +57,44 @@ trait Memoization {
     }
 
     /**
+     * Capture logic for a function that does not take parameters. This has a narrow use case,
+     * as it can be used when a function used as an accessor needs to return only a single value
+     * that can be determined at the time of the first invocation.
+     *
+     * This effectively is a single-object cache, a-la singleton factories, but not.
+     *
+     * @param body      function body
+     * @tparam Value    function return value
+     */
+    private sealed class NullaryCapture[Value](body: ( => Value)) {
+
+        private var cachedReturn: Option[Value] = None
+
+        def apply: Value = cachedReturn match {
+            case Some(value)    => value
+            case None           =>
+                cachedReturn = Some(body)
+                cachedReturn.get
+        }
+    }
+
+    /**
      * Default, single-arity memo function
      *
      * @param function  function
      * @tparam I        function input type
      * @tparam V        function return type
-     * @return          memoized function
+     * @return          memoizing function
      */
     final protected def memoize[I,V](function: I => V): I => V = new Capture[I, V](function).apply
+
+    /**
+     * Used for nullary single-return-value corner cases where a single value may be calculated and used from thereon
+     * as the return value of the function
+     *
+     * @param function  function
+     * @tparam V        function return type
+     * @return          caching function
+     */
+    final protected def cache[V](function: => V): ( => V) = new NullaryCapture[V](function).apply
 }
