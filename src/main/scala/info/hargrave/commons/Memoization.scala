@@ -14,7 +14,7 @@ trait Memoization {
      * @tparam Input    function input type
      * @tparam Value    function return type
      */
-    private sealed class Capture[Input, Value](body: Input => Value) {
+    sealed class Capture[Input, Value](body: Input => Value) {
 
         private val inputCache = MutableMap[Input, Value]()
 
@@ -66,7 +66,7 @@ trait Memoization {
      * @param body      function body
      * @tparam Value    function return value
      */
-    private sealed class NullaryCapture[Value](body: ( => Value)) {
+    sealed class LazyCache[Value](body: => Value) {
 
         private var cachedReturn: Option[Value] = None
 
@@ -96,5 +96,5 @@ trait Memoization {
      * @tparam V        function return type
      * @return          caching function
      */
-    final protected def cache[V](function: => V): ( => V) = new NullaryCapture[V](function).apply
+    final protected def cache[V](function: => V): V = new LazyCache[V](function).apply
 }
