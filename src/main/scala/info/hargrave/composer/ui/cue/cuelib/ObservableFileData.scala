@@ -5,7 +5,6 @@ import java.util
 import info.hargrave.commons.Memoization
 import jwbroek.cuelib.{TrackData, CueSheet, Index, FileData}
 
-import scalafx.beans.Observable
 import scalafx.beans.property.{ObjectProperty, StringProperty}
 import scalafx.collections.ObservableBuffer
 
@@ -26,10 +25,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
     val parentProperty      = ObjectProperty(super.getParent)
     val trackData           = ObservableBuffer(super.getTrackData.asScala:_*)
 
-    fileProperty.onChange       { invalidate() }
-    fileTypeProperty.onChange   { invalidate() }
-    parentProperty.onChange     { invalidate() }
-    trackData.onChange          { invalidate() }
+    Set(fileProperty, fileTypeProperty, parentProperty, trackData).foreach(_.invalidatesParent())
 
     /**
      * Clone values from the specified FileData
@@ -69,7 +65,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
      * @return binding subscription
      */
     def bind(subordinate: FileData): Subscription = {
-        val subscriptions = Seq(fileProperty.onChange { subordinate.setFile(this.getFile) },
+        val subscriptions = Set(fileProperty.onChange { subordinate.setFile(this.getFile) },
                                 fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) },
                                 trackData.onChange {
                                                        subordinate.getTrackData.clear()
