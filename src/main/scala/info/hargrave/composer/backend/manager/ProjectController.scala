@@ -182,6 +182,22 @@ class ProjectController(implicit val interface: ProjectUserInterface,
     }
 
     /**
+     * Creates a new project from [[ProjectFactory]] project.
+     * Project factories can be gotten from ProjectExtensionAssociations.
+     *
+     * @param factory
+     * @return
+     */
+    def createNewProject(factory: ProjectFactory): Project = {
+        logger.debug("Creating new project")
+        val projectInstance = factory()
+        logger.trace(s"Instantiated $projectInstance")
+        addProject(projectInstance)
+
+        projectInstance
+    }
+
+    /**
      * Call [[Project.readProject()]] on a preexisting project and its storage location
      *
      * @param project project to reload
@@ -228,6 +244,7 @@ object ProjectController {
     type Extensions         = Seq[String]
     type ExtensionFilter    = Map[String, Seq[String]]
 
+    // TODO 1-1 when real CUE files could be N-1? (.bin)
     val ProjectExtensionAssociations: Map[String, ProjectFactory] = Map("cue" -> (()=> new CUEProject))
     val ProjectExtensionFilters: Map[ProjectType, ExtensionFilter] =
         Map(classOf[CUEProject ] -> Map(t"project.type.cue" -> Seq("*.cue")))
