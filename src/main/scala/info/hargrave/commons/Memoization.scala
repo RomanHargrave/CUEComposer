@@ -29,6 +29,13 @@ trait Memoization {
         def forget(input: Input): Option[Value] = inputCache.remove(input)
 
         /**
+         * Forget all inputs associated with an output
+         *
+         * @param output output
+         */
+        def forgetInputsFor(output: Value): Unit = inputsFor(output).foreach(forget)
+
+        /**
          * Forget all input value associations
          */
         def forgetAll(): Unit = inputCache.clear()
