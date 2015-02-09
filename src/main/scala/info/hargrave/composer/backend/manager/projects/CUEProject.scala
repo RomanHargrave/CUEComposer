@@ -15,7 +15,7 @@ import jwbroek.cuelib.{CueSheetSerializer, CueSheet, CueParser, Error => Cueshee
  */
 class CUEProject extends Project {
 
-    private var underlyingCueSheet: Option[CueSheet] = None
+    private var underlyingCueSheet: Option[CueSheet] = Some(new CueSheet)
 
     /**
      * Access the underlying cue sheet object
