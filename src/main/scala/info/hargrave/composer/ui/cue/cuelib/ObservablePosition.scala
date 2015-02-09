@@ -15,9 +15,7 @@ final class ObservablePosition extends Position with Observability {
     val secondsProperty = IntegerProperty(super.getSeconds)
     val framesProperty  = IntegerProperty(super.getFrames)
 
-    minutesProperty.onChange    { invalidate() }
-    secondsProperty.onChange    { invalidate() }
-    framesProperty.onChange     { invalidate() }
+    Set(minutesProperty, secondsProperty, framesProperty).foreach(_.invalidatesParent())
 
     /**
      * Create an observable clone using a position's fields
@@ -66,7 +64,7 @@ final class ObservablePosition extends Position with Observability {
      * @return binding subscription
      */
     def bind(subordinate: Position): Subscription = {
-        val subscriptions = Seq(minutesProperty.onChange { subordinate.setMinutes(getMinutes) },
+        val subscriptions = Set(minutesProperty.onChange { subordinate.setMinutes(getMinutes) },
                                 secondsProperty.onChange { subordinate.setSeconds(getSeconds) },
                                 framesProperty.onChange  { subordinate.setFrames(getFrames) })
 
