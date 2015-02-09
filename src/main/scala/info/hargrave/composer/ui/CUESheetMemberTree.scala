@@ -101,7 +101,11 @@ class CUESheetMemberTree(sheet: CueSheet) extends VBox with Editable {
             case Some(Left(fileData))   =>
                 filesProperty.remove(fileData)
             case Some(Right(trackData)) =>
+
                 trackData.parent.getTrackData.remove(trackData)
+
+                elementsList.selectionModel.value.select(null)
+
                 synchronizeData()
         }
 
