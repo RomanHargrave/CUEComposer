@@ -72,11 +72,14 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
 }
 object ObservableFileData extends AnyRef with Memoization {
 
-    val fromFileData = memoize { dataArg: FileData => new ObservableFileData(dataArg) }
+    val fromFileData    = memoize { dataArg: FileData => new ObservableFileData(dataArg) }
+    val bindSubordinate = memoize { pair: (ObservableFileData, FileData) => pair._1.bind(pair._2) }
 
-    def apply(sub: FileData): ObservableFileData = {
-        val wrapper = fromFileData(sub)
-        wrapper.bind(sub)
-        wrapper
+    def apply(sub: FileData): ObservableFileData = sub match {
+        case impl: ObservableFileData => impl
+        case normal: FileData =>
+            val wrapper = fromFileData(sub)
+            bindSubordinate(wrapper, sub)
+            wrapper
     }
 }
