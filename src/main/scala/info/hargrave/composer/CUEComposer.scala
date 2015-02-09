@@ -27,8 +27,12 @@ final class CUEComposer extends JFXApp with Localization with EventIncludes {
     val controller  = new ProjectController
 
     val fileMenu    = new Menu(t"ui.menu.file") {
-        items = List(   new MenuItem(t"ui.menu.file.new")   {
+        items =  Seq(   new Menu(t"ui.menu.file.new")   {
                             id = "menu.file.new"
+                            items = ProjectController.ProjectExtensionAssociations.map(assoc => new MenuItem {
+                                text = t"project.type.${assoc._1}"
+                                onAction = () => controller.createNewProject(assoc._2)
+                            })
                         },
                         new MenuItem(t"ui.menu.file.open")  {
                             id = "menu.file.open"
@@ -49,11 +53,12 @@ final class CUEComposer extends JFXApp with Localization with EventIncludes {
                         } )
     }
 
-    val editMenu    = new Menu(t"ui.menu.edit") {
-        items = List(   new MenuItem(t"ui.menu.edit.cut")   { id = "menu.edit.cut" },
-                        new MenuItem(t"ui.menu.edit.copy")  { id = "menu.edit.copy" },
-                        new MenuItem(t"ui.menu.edit.paste") { id = "menu.edit.paste" } )
-    }
+    // TODO Implement clipboard support for complex types
+//    val editMenu    = new Menu(t"ui.menu.edit") {
+//        items = List(   new MenuItem(t"ui.menu.edit.cut")   { id = "menu.edit.cut" },
+//                        new MenuItem(t"ui.menu.edit.copy")  { id = "menu.edit.copy" },
+//                        new MenuItem(t"ui.menu.edit.paste") { id = "menu.edit.paste" } )
+//    }
 
     val helpMenu    = new Menu(t"ui.menu.help") {
         items = List(   new MenuItem(t"ui.menu.help.about") { id = "menu.help.about" },
@@ -61,7 +66,7 @@ final class CUEComposer extends JFXApp with Localization with EventIncludes {
     }
 
     val menuBar     = new MenuBar {
-        menus = List(fileMenu, editMenu, helpMenu)
+        menus = List(fileMenu, /*editMenu,*/ helpMenu)
     }
 
     /*
