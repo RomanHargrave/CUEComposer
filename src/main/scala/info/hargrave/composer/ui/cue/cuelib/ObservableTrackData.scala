@@ -30,17 +30,9 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
     val flagsProperty       = ObservableSet(super.getFlags.asScala)
     val parentProperty      = ObjectProperty(super.getParent)
 
-    dataTypeProperty.onChange   { invalidate() }
-    isrcCodeProperty.onChange   { invalidate() }
-    numberProperty.onChange     { invalidate() }
-    performerProperty.onChange  { invalidate() }
-    postgapProperty.onChange    { invalidate() }
-    pregapProperty.onChange     { invalidate() }
-    songwriterProperty.onChange { invalidate() }
-    titleProperty.onChange      { invalidate() }
-    indicesProperty.onChange    { invalidate() }
-    flagsProperty.onChange      { invalidate() }
-    parentProperty.onChange     { invalidate() }
+    Set(dataTypeProperty, isrcCodeProperty, numberProperty, performerProperty,
+        postgapProperty, pregapProperty, songwriterProperty, titleProperty,
+        indicesProperty, flagsProperty, parentProperty).foreach(_.invalidatesParent())
 
     /**
      * Clone the passed TrackData
@@ -111,7 +103,7 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
      * @return
      */
     def bind(subordinate: TrackData): Subscription = {
-        val subscriptions = Seq(dataTypeProperty.onChange { subordinate.setDataType(getDataType) },
+        val subscriptions = Set(dataTypeProperty.onChange { subordinate.setDataType(getDataType) },
                                 isrcCodeProperty.onChange { subordinate.setIsrcCode(getIsrcCode) },
                                 numberProperty.onChange { subordinate.setNumber(getNumber) },
                                 performerProperty.onChange { subordinate.setPerformer(getPerformer) },
