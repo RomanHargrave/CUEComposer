@@ -9,6 +9,7 @@ import scala.collection.JavaConversions._
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Side
+import scalafx.scene.Node
 import scalafx.scene.control.TabPane.TabClosingPolicy
 import scalafx.scene.control._
 import scalafx.scene.layout._
@@ -32,37 +33,39 @@ class CUEProjectUI(project: CUEProject) extends TabPane {
     /*
      * Contains the active cuesheet element
      */
-    private val elementsEditor  = new HBox {
+    private val elementsEditor  = new SplitPane {
         vgrow       = Priority.Always
         hgrow       = Priority.Always
-        fillHeight  = true
     }
     private val elementTree     = new CUESheetMemberTree(cueSheet){
         editable    = true
         vgrow       = Priority.Always
     }
 
-    elementsEditor.children = ObservableBuffer(Seq(elementTree))
+    elementsEditor.items.add(elementTree)
+    elementsEditor.items.add(new Pane)
+
+    elementsEditor.dividers(0).setPosition(.25)
 
     elementTree.onSelectionChanged {(selection: Option[Either[FileData, TrackData]]) =>
         val newChild = selection match {
-            case Some(Left(fileData))   => Some(new FileDataView(fileData) {
+            case Some(Left(fileData))   => new FileDataView(fileData) {
                 editable = true
                 vgrow = Priority.Always
                 hgrow = Priority.Always
-            })
-            case Some(Right(trackData)) => Some(new TrackDataView(trackData) {
+            }
+            case Some(Right(trackData)) => new TrackDataView(trackData) {
                 editable = true
                 vgrow = Priority.Always
                 hgrow = Priority.Always
-            })
-            case None                   => None
+            }
+            case None                   => new Pane
         }
 
         /*
          * Stop using intermediate panes, because debugging vstretch sucks.
          */
-        elementsEditor.children = ObservableBuffer(Seq(elementTree, newChild.orNull))
+        elementsEditor.getItems.set(1, newChild)
     }
 
 

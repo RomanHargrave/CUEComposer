@@ -3,6 +3,7 @@ package info.hargrave.composer.backend.manager
 import java.io.{FileInputStream, FileOutputStream, File}
 
 import info.hargrave.composer._
+import info.hargrave.composer.backend.manager.ProjectController.ProjectFactory
 import info.hargrave.composer.backend.manager.projects.CUEProject
 import info.hargrave.composer.backend.manager.ui.ProjectUserInterface
 import info.hargrave.composer.ui.PromptInterface
@@ -168,7 +169,7 @@ class ProjectController(implicit val interface: ProjectUserInterface,
     @throws(classOf[NoSuchElementException])
     def createProjectFromFile(file: File): Project = {
         logger.info(tf"log.opening_file"(file))
-        val projectInstance = ProjectController.ProjectExtensionAssociations(file.getName.split("\\.").last.toLowerCase)()
+        val projectInstance = ProjectController.ProjectExtensionAssociations(file.getName.split("""\.""").last.toLowerCase)()
         val inputStream     = new FileInputStream(file)
         logger.debug(s"instantiated project ($projectInstance) based on filetype")
         logger.trace(s"opened input stream $inputStream on file $file")
@@ -222,18 +223,23 @@ class ProjectController(implicit val interface: ProjectUserInterface,
 }
 object ProjectController {
 
-    val ProjectExtensionAssociations: Map[String, (()=>Project)] = Map("cue" -> (()=> new CUEProject))
-    val ProjectExtensionFilters: Map[Class[_<:Project], Map[String, Seq[String]]] =
+    type ProjectFactory     = () => Project
+    type ProjectType        = Class[_<:Project]
+    type Extensions         = Seq[String]
+    type ExtensionFilter    = Map[String, Seq[String]]
+
+    val ProjectExtensionAssociations: Map[String, ProjectFactory] = Map("cue" -> (()=> new CUEProject))
+    val ProjectExtensionFilters: Map[ProjectType, ExtensionFilter] =
         Map(classOf[CUEProject ] -> Map(t"project.type.cue" -> Seq("*.cue")))
 
     lazy val FatExtensionFilter =
-        ProjectExtensionFilters.values.foldRight(Map[String, Seq[String]]()) {case(filter, fatMap) =>
+        ProjectExtensionFilters.values.foldRight(Map[String, Seq[String]]()) {case(filter: ExtensionFilter, fatMap: ExtensionFilter) =>
                                                                                 var updatedFatMap = fatMap
                                                                                 filter.foreach{case(desc, exts) =>
-                                                                                               updatedFatMap = fatMap.updated(desc, updatedFatMap.get(desc) match {
-                                                                                                   case someSeq: Some[Seq[String]]  => someSeq.get ++ exts
-                                                                                                   case None                        => exts
-                                                                                               })
+                                                                                                   updatedFatMap = fatMap.updated(desc, updatedFatMap.get(desc) match {
+                                                                                                       case someSeq: Some[Extensions]   => someSeq.get ++ exts
+                                                                                                       case None                        => exts
+                                                                                                   })
                                                                                               }
                                                                                 updatedFatMap
                                                                              }
