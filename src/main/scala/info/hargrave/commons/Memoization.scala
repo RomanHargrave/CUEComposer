@@ -19,6 +19,34 @@ trait Memoization {
         private val inputCache = MutableMap[Input, Value]()
 
         def apply(input: Input): Value = inputCache.getOrElseUpdate(input, body(input))
+
+        /**
+         * Forget the input value's cached return value
+         *
+         * @param input input value
+         * @return former return value, if present
+         */
+        def forget(input: Input): Option[Value] = inputCache.remove(input)
+
+        /**
+         * Forget all input value associations
+         */
+        def forgetAll(): Unit = inputCache.clear()
+
+        /**
+         * Lookup all inputs that correspond the the specified output value
+         *
+         * @param output output value
+         * @return output
+         */
+        def inputsFor(output: Value): Iterable[Input] = inputCache.filter(_._2 == output).map(_._1)
+
+        /**
+         * View a copy of the input/output cache
+         *
+         * @return input/output cache
+         */
+        def associations: Map[Input, Value] = inputCache.toMap
     }
 
     /**
