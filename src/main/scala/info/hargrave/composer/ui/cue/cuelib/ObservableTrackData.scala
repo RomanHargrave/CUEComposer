@@ -49,6 +49,7 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
         setPostgap(clone.getPostgap)
         setPregap(clone.getPregap)
         setSongwriter(clone.getSongwriter)
+        setTitle(clone.getTitle)
         setParent(clone.getParent)
 
         indicesProperty.addAll(clone.getIndices)
