@@ -49,8 +49,9 @@ dependencies {
      */
     compile     project(':cuelib')
 
-    testCompile group: 'org.scalatest', name: 'scalatest_2.11', version: '2.2.4'
-    testRuntime group: 'org.pegdown',   name: 'pegdown',        version: '1.1.0'
+    testCompile group: 'org.scalatest',     name: 'scalatest_2.11', version: '2.2.4'
+    testCompile group: 'uk.co.jemos.podam', name: 'podam',          version: '4.7.2.RELEASE'
+    testRuntime group: 'org.pegdown',       name: 'pegdown',        version: '1.1.0'
 }
 
 processResources {
