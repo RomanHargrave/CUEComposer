@@ -14,10 +14,12 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'eu.appsatori',    name: 'gradle-fatjar-plugin',   version: '0.3'
+        classpath group: 'eu.appsatori',        name: 'gradle-fatjar-plugin',   version: '0.3'
+        classpath group: 'com.github.maiflai',  name: 'gradle-scalatest',       version: '0.6-5-g9065d91'
     }
 }
 
+apply plugin: 'com.github.maiflai.scalatest'
 apply plugin: 'eu.appsatori.fatjar'
 
 repositories {
@@ -48,6 +50,7 @@ dependencies {
     compile     project(':cuelib')
 
     testCompile group: 'org.scalatest', name: 'scalatest_2.11', version: '2.2.4'
+    testRuntime group: 'org.pegdown',   name: 'pegdown',        version: '1.1.0'
 }
 
 processResources {
