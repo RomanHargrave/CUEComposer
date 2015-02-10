@@ -1,6 +1,6 @@
 language: scala
 
-script: ./gradlew test
+script: ./gradlew test --info
 
 jdk:
   - oraclejdk8
