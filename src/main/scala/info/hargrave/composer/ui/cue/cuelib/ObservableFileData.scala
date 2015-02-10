@@ -2,6 +2,7 @@ package info.hargrave.composer.ui.cue.cuelib
 
 import java.util
 
+import info.hargrave.composer._
 import info.hargrave.commons.Memoization
 import jwbroek.cuelib.{TrackData, CueSheet, Index, FileData}
 
@@ -38,6 +39,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
 
         setFile(clone.getFile)
         setFileType(clone.getFileType)
+
         trackData.addAll(clone.getTrackData)
     }
 
@@ -54,8 +56,6 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
     override def getFileType: String = fileTypeProperty.value
 
     override def getParent: CueSheet = parentProperty.value
-
-    override def getAllIndices: util.List[Index] = trackData.map(track => track.getIndices.asScala).flatten.asJava
 
     /**
      * Bind the fields of a subordinate FileData to the corresponding properties in this implementation
