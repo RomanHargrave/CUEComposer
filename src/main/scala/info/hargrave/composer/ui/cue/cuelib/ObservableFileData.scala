@@ -67,6 +67,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
     def bind(subordinate: FileData): Subscription = {
         val subscriptions = Set(fileProperty.onChange { subordinate.setFile(this.getFile) },
                                 fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) },
+                                parentProperty.onChange { subordinate.setParent(this.getParent) },
                                 trackData.onChange {
                                                        subordinate.getTrackData.clear()
                                                        subordinate.getTrackData.addAll(getTrackData)
