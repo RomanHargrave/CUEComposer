@@ -661,5 +661,12 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
             }
         }
+        "as a feature" - {
+            val trackData   = garbageInjector.manufacturePojo(classOf[TrackData])
+
+            "it should provide implicit conversion" in {
+                assert((trackData: ObservableTrackData).isInstanceOf[ObservableTrackData])
+            }
+        }
     }
 }
