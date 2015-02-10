@@ -669,4 +669,81 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
             }
         }
     }
+    "An Observable Index" - {
+        "as an object" - {
+            val index       = garbageInjector.manufacturePojo(classOf[Index])
+            val observable  = ObservableIndex(index)
+
+            "should be memoized" in {
+                ObservableIndex(index) should be(observable)
+            }
+            "should not allow nested conversion" in {
+                ObservableIndex(observable) should be(observable)
+            }
+        }
+        "as a model" - {
+            val index       = garbageInjector.manufacturePojo(classOf[Index])
+            val observable  = ObservableIndex(index)
+
+            "should be identical to those of the cloned data" - {
+                "getNumber" in {
+                    observable.getNumber shouldEqual index.getNumber
+                }
+                "getPosition" in {
+                    observable.getPosition shouldEqual index.getPosition
+                }
+            }
+            "should modify the subordinate data" - {
+                val moreJunk    = garbageInjector.manufacturePojo(classOf[Index])
+
+                "setNumber" in {
+                    observable.setNumber(moreJunk.getNumber)
+                    observable.getNumber shouldEqual index.getNumber
+                }
+                "setPosition" in {
+                    observable.setPosition(moreJunk.getPosition)
+                    observable.getPosition shouldEqual index.getPosition
+                }
+            }
+            "should react to mutation" - {
+                val moreJunk    = garbageInjector.manufacturePojo(classOf[Index])
+
+                "setNumber" in {
+                    val waiter  = new Waiter
+                    observable.numberProperty.onInvalidate { waiter.dismiss() }
+                    observable.setNumber(moreJunk.getNumber)
+                    waiter.await()
+                }
+                "setPosition" in {
+                    val waiter  = new Waiter
+                    observable.positionProperty.onInvalidate { waiter.dismiss() }
+                    observable.setPosition(moreJunk.getPosition)
+                    waiter.await()
+                }
+            }
+            "should invalidate the index when modified" - {
+                val moreJunk    = garbageInjector.manufacturePojo(classOf[Index])
+
+                "setNumber" in {
+                    val waiter  = new Waiter
+                    observable.onInvalidate { waiter.dismiss() }
+                    observable.setNumber(moreJunk.getNumber)
+                    waiter.await()
+                }
+                "setPosition" in {
+                    val waiter  = new Waiter
+                    observable.onInvalidate { waiter.dismiss() }
+                    observable.setPosition(moreJunk.getPosition)
+                    waiter.await()
+                }
+            }
+        }
+        "as a feature" - {
+            val index   = garbageInjector.manufacturePojo(classOf[Index])
+
+            "should provide implicit conversion" in {
+                assert((index: ObservableIndex).isInstanceOf[ObservableIndex])
+            }
+        }
+    }
 }
