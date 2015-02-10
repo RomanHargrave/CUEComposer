@@ -2,16 +2,19 @@ package info.hargrave.composer.test
 
 import info.hargrave.composer.ui.cue.cuelib.{ObservableFileData, ObservableCueSheet}
 
-import jwbroek.cuelib.{FileData, CueSheet}
+import jwbroek.cuelib.{Index, TrackData, FileData, CueSheet}
 
 import org.scalatest._
 import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest.time.{Milliseconds, Span}
 
 import uk.co.jemos.podam.api.PodamFactoryImpl
 
 import scala.collection.JavaConverters._
 
 import info.hargrave.composer.ui.cue.cuelib._
+
+import scala.util.Random
 
 class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertions {
 
@@ -235,8 +238,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
     }
     "An Observable FileData" - {
         "as an object" - {
-            val cueSheet    = new CueSheet
-            val fileData    = new FileData(cueSheet)
+            val fileData    = garbageInjector.manufacturePojo(classOf[FileData])
             val observable  = ObservableFileData(fileData)
 
             "should be memoized" in {
@@ -350,6 +352,283 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
 
             "should have implicit conversion" in {
                 assert((fileData: ObservableFileData).isInstanceOf[ObservableFileData])
+            }
+        }
+    }
+    "An Observable TrackData" - {
+        "as an object" - {
+            val trackData   = garbageInjector.manufacturePojo(classOf[TrackData])
+            val observable  = ObservableTrackData(trackData)
+
+            "should be memoized" in {
+                ObservableTrackData(trackData) should be(observable)
+            }
+
+            "should not allow for nested conversion" in {
+                ObservableTrackData(observable) should be(observable)
+            }
+        }
+        "as a model" - {
+            val trackData   = garbageInjector.manufacturePojo(classOf[TrackData])
+            val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index])).asJava
+            trackData.getIndices.addAll(indices)
+            val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+            trackData.getFlags.addAll(flags)
+            val observable  = ObservableTrackData(trackData)
+
+            "its properties" - {
+                "should be identical to those of the cloned data" - {
+                    "getDataType" in {
+                        observable.getDataType shouldEqual trackData.getDataType
+                    }
+                    "getIsrcCode" in {
+                        observable.getIsrcCode shouldEqual trackData.getIsrcCode
+                    }
+                    "getNumber" in {
+                        observable.getNumber shouldEqual trackData.getNumber
+                    }
+                    "getPerformer" in {
+                        observable.getPerformer shouldEqual trackData.getPerformer
+                    }
+                    "getPostgap" in {
+                        observable.getPostgap shouldEqual trackData.getPostgap
+                    }
+                    "getPregap" in {
+                        observable.getPregap shouldEqual trackData.getPregap
+                    }
+                    "getSongwriter" in {
+                        observable.getSongwriter shouldEqual trackData.getSongwriter
+                    }
+                    "getTitle" in {
+                        observable.getTitle shouldEqual trackData.getTitle
+                    }
+                    "indicesProperty" in {
+                        assert(listsEqual(observable.getIndices.asScala, trackData.getIndices.asScala))
+                    }
+                    "flagsProperty" in {
+                        assert(listsEqual(observable.getFlags.asScala, trackData.getFlags.asScala))
+                    }
+                    "getParent" in {
+                        observable.getParent shouldEqual trackData.getParent
+                    }
+                }
+                "should modify the subordinate data" - {
+                    val moreGarbage = garbageInjector.manufacturePojo(classOf[TrackData])
+                    val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+                    moreGarbage.getIndices.addAll(indices.asJava)
+                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+                    moreGarbage.getFlags.addAll(flags)
+
+                    "getDataType" in {
+                        observable.setDataType(moreGarbage.getDataType)
+                        observable.getDataType shouldEqual trackData.getDataType
+                    }
+                    "getIsrcCode" in {
+                        observable.setIsrcCode(moreGarbage.getIsrcCode)
+                        observable.getIsrcCode shouldEqual trackData.getIsrcCode
+                    }
+                    "getNumber" in {
+                        observable.setNumber(moreGarbage.getNumber)
+                        observable.getNumber shouldEqual trackData.getNumber
+                    }
+                    "getPerformer" in {
+                        observable.setPerformer(moreGarbage.getPerformer)
+                        observable.getPerformer shouldEqual trackData.getPerformer
+                    }
+                    "getPostgap" in {
+                        observable.setPostgap(moreGarbage.getPostgap)
+                        observable.getPostgap shouldEqual trackData.getPostgap
+                    }
+                    "getPregap" in {
+                        observable.setPregap(moreGarbage.getPregap)
+                        observable.getPregap shouldEqual trackData.getPregap
+                    }
+                    "getSongwriter" in {
+                        observable.setSongwriter(moreGarbage.getSongwriter)
+                        observable.getSongwriter shouldEqual trackData.getSongwriter
+                    }
+                    "getTitle" in {
+                        observable.setTitle(moreGarbage.getTitle)
+                        observable.getTitle shouldEqual trackData.getTitle
+                    }
+                    "indicesProperty" in {
+                        observable.getIndices.clear()
+                        observable.getIndices.addAll(moreGarbage.getIndices)
+                        assert(listsEqual(observable.getIndices.asScala, trackData.getIndices.asScala))
+                    }
+                    "flagsProperty" in {
+                        observable.getFlags.clear()
+                        observable.getFlags.addAll(moreGarbage.getFlags)
+                        assert(listsEqual(observable.getFlags.asScala, trackData.getFlags.asScala))
+                    }
+                    "getParent" in {
+                        observable.setParent(moreGarbage.getParent)
+                        observable.getParent shouldEqual trackData.getParent
+                    }
+                }
+                "should react to mutation" - {
+                    val moreGarbage = garbageInjector.manufacturePojo(classOf[TrackData])
+                    val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+                    moreGarbage.getIndices.addAll(indices.asJava)
+                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+                    moreGarbage.getFlags.addAll(flags)
+
+                    "getDataType" in {
+                        val waiter  = new Waiter
+                        observable.dataTypeProperty.onInvalidate { waiter.dismiss() }
+                        observable.setDataType(moreGarbage.getDataType)
+                        waiter.await()
+                    }
+                    "getIsrcCode" in {
+                        val waiter  = new Waiter
+                        observable.isrcCodeProperty.onInvalidate { waiter.dismiss() }
+                        observable.setIsrcCode(moreGarbage.getIsrcCode)
+                        waiter.await()
+                    }
+                    "getNumber" in {
+                        val waiter  = new Waiter
+                        observable.numberProperty.onInvalidate { waiter.dismiss() }
+                        observable.setNumber(moreGarbage.getNumber)
+                        waiter.await()
+                    }
+                    "getPerformer" in {
+                        val waiter  = new Waiter
+                        observable.performerProperty.onInvalidate { waiter.dismiss() }
+                        observable.setPerformer(moreGarbage.getPerformer)
+                        waiter.await()
+                    }
+                    "getPostgap" in {
+                        val waiter  = new Waiter
+                        observable.postgapProperty.onInvalidate { waiter.dismiss() }
+                        observable.setPostgap(moreGarbage.getPostgap)
+                        waiter.await()
+                    }
+                    "getPregap" in {
+                        val waiter  = new Waiter
+                        observable.pregapProperty.onInvalidate { waiter.dismiss() }
+                        observable.setPregap(moreGarbage.getPregap)
+                        waiter.await()
+                    }
+                    "getSongwriter" in {
+                        val waiter  = new Waiter
+                        observable.songwriterProperty.onInvalidate { waiter.dismiss() }
+                        observable.setSongwriter(moreGarbage.getSongwriter)
+                        waiter.await()
+                    }
+                    "getTitle" in {
+                        val waiter  = new Waiter
+                        observable.titleProperty.onInvalidate { waiter.dismiss() }
+                        observable.setTitle(moreGarbage.getTitle)
+                        waiter.await()
+                    }
+                    "indicesProperty" in {
+                        val waiter  = new Waiter
+                        observable.indicesProperty.onInvalidate { waiter.dismiss() }
+                        observable.getIndices.addAll(moreGarbage.getIndices)
+                        waiter.await()
+                    }
+                    "flagsProperty" in {
+                        val waiter  = new Waiter
+                        observable.flagsProperty.onInvalidate { waiter.dismiss() }
+                        observable.getFlags.addAll(Set("bork").asJava)
+                        waiter.await(timeout(Span(500, Milliseconds)))
+                    }
+                    "getParent" in {
+                        val waiter  = new Waiter
+                        observable.parentProperty.onInvalidate { waiter.dismiss() }
+                        observable.setParent(moreGarbage.getParent)
+                        waiter.await()
+                    }
+                }
+                "should invalidate the parent" - {
+                    val moreGarbage = garbageInjector.manufacturePojo(classOf[TrackData])
+                    val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+                    moreGarbage.getIndices.addAll(indices.asJava)
+                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+                    moreGarbage.getFlags.addAll(flags)
+
+                    "getDataType" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setDataType(moreGarbage.getDataType)
+                        waiter.await()
+                    }
+                    "getIsrcCode" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setIsrcCode(moreGarbage.getIsrcCode)
+                        waiter.await()
+                    }
+                    "getNumber" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setNumber(moreGarbage.getNumber)
+                        waiter.await()
+                    }
+                    "getPerformer" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setPerformer(moreGarbage.getPerformer)
+                        waiter.await()
+                    }
+                    "getPostgap" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setPostgap(moreGarbage.getPostgap)
+                        waiter.await()
+                    }
+                    "getPregap" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setPregap(moreGarbage.getPregap)
+                        waiter.await()
+                    }
+                    "getSongwriter" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setSongwriter(moreGarbage.getSongwriter)
+                        waiter.await()
+                    }
+                    "getTitle" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setTitle(moreGarbage.getTitle)
+                        waiter.await()
+                    }
+                    "indicesProperty" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.getIndices.addAll(moreGarbage.getIndices)
+                        waiter.await()
+                    }
+                    "flagsProperty" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.getFlags.addAll(Set("foo").asJava)
+                        waiter.await()
+                    }
+                    "getParent" in {
+                        val waiter  = new Waiter
+                        observable.onInvalidate { waiter.dismiss() }
+                        observable.setParent(moreGarbage.getParent)
+                        waiter.await()
+                    }
+                }
+            }
+            "its data should affect outcome of operations implemented in the superclass" - {
+                val moreGarbage = garbageInjector.manufacturePojo(classOf[TrackData])
+                val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+                moreGarbage.getIndices.addAll(indices.asJava)
+
+                "getIndex(Int)" in {
+                    observable.getIndices.clear()
+                    observable.getIndices.addAll(moreGarbage.getIndices)
+
+                    // List index 0, not Index(0)
+                    val pickIdx = moreGarbage.getIndices.get(0)
+
+                    observable.getIndex(pickIdx.getNumber) shouldBe pickIdx
+                }
             }
         }
     }
