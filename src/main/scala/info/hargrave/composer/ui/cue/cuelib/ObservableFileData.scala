@@ -24,9 +24,9 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
     val fileProperty        = StringProperty(super.getFile)
     val fileTypeProperty    = StringProperty(super.getFileType)
     val parentProperty      = ObjectProperty(super.getParent)
-    val trackData           = ObservableBuffer(super.getTrackData.asScala:_*)
+    val trackDataProperty   = ObservableBuffer(super.getTrackData.asScala:_*)
 
-    Set(fileProperty, fileTypeProperty, parentProperty, trackData).foreach(_.invalidatesParent())
+    Set(fileProperty, fileTypeProperty, parentProperty, trackDataProperty).foreach(_.invalidatesParent())
 
     /**
      * Clone values from the specified FileData
@@ -40,7 +40,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
         setFile(clone.getFile)
         setFileType(clone.getFileType)
 
-        trackData.addAll(clone.getTrackData)
+        trackDataProperty.addAll(clone.getTrackData)
     }
 
     override def setFile(file: String): Unit = fileProperty.value = file
@@ -49,7 +49,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
 
     override def setParent(parent: CueSheet): Unit = parentProperty.value = parent
 
-    override def getTrackData: util.List[TrackData] = trackData
+    override def getTrackData: util.List[TrackData] = trackDataProperty
 
     override def getFile: String = fileProperty.value
 
@@ -68,7 +68,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
         val subscriptions = Set(fileProperty.onChange { subordinate.setFile(this.getFile) },
                                 fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) },
                                 parentProperty.onChange { subordinate.setParent(this.getParent) },
-                                trackData.onChange {
+                                trackDataProperty.onChange {
                                                        subordinate.getTrackData.clear()
                                                        subordinate.getTrackData.addAll(getTrackData)
                                                        ()

@@ -21,6 +21,15 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
     val garbageInjector = new PodamFactoryImpl
 
     def listsEqual[T](a: Iterable[T], b: Iterable[T]): Boolean = a.zip(b).forall {case(x, y) => x == y}
+    def randomIndices = (0 to 3).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+    def randomTracks =
+        (0 to 10)
+            .map(_ => garbageInjector.manufacturePojo(classOf[TrackData]))
+            .map { t => t.getIndices.addAll(randomIndices.asJava); t }
+    def randomFiles =
+        (0 to 10)
+            .map(_ => garbageInjector.manufacturePojo(classOf[FileData]))
+            .map { f => f.getTrackData.addAll(randomTracks.asJava); f}
 
     "An Observable CueSheet" - {
         "as an object" - {
@@ -37,6 +46,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
         }
         "as a model" - {
             val cueSheet    = garbageInjector.manufacturePojo(classOf[CueSheet])
+            cueSheet.getFileData.addAll(randomFiles.asJava)
             val observable  = ObservableCueSheet(cueSheet)
 
             "its properties" - {
@@ -65,12 +75,13 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                     "getComment" in {
                         observable.getComment       shouldEqual cueSheet.getComment
                     }
-                    "getFileData" in {
+                    "fileDataProperty" in {
                         assert(listsEqual(observable.getFileData.asScala, cueSheet.getFileData.asScala))
                     }
                 }
                 "should modify the subordinate sheet" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[CueSheet])
+                    moreGarbage.getFileData.addAll(randomFiles.asJava)
 
                     "setCatalog" in {
                         observable.setCatalog(moreGarbage.getCatalog)
@@ -104,7 +115,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                         observable.setComment(moreGarbage.getComment)
                         observable.getComment       shouldEqual cueSheet.getComment
                     }
-                    "getFileData" in {
+                    "fileDataProperty" in {
                         observable.getFileData.clear()
                         observable.getFileData.addAll(moreGarbage.getFileData)
                         assert(listsEqual(observable.getFileData.asScala, cueSheet.getFileData.asScala))
@@ -112,6 +123,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should react to mutation" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[CueSheet])
+                    moreGarbage.getFileData.addAll(randomFiles.asJava)
 
                     "setCatalog" in {
                         val waiter      = new Waiter
@@ -161,7 +173,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                         observable.setComment(moreGarbage.getComment)
                         waiter.await()
                     }
-                    "setFileData" in {
+                    "fileDataProperty" in {
                         val waiter      = new Waiter
                         observable.fileDataProperty.onInvalidate { waiter.dismiss() }
                         observable.getFileData.addAll(moreGarbage.getFileData)
@@ -219,7 +231,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                         observable.setComment(moreGarbage.getComment)
                         waiter.await()
                     }
-                    "setFileData" in {
+                    "fileDataProperty" in {
                         val waiter      = new Waiter
                         observable.onInvalidate { waiter.dismiss() }
                         observable.getFileData.addAll(moreGarbage.getFileData)
@@ -239,6 +251,8 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
     "An Observable FileData" - {
         "as an object" - {
             val fileData    = garbageInjector.manufacturePojo(classOf[FileData])
+            fileData.getTrackData.addAll(randomTracks.asJava)
+
             val observable  = ObservableFileData(fileData)
 
             "should be memoized" in {
@@ -250,10 +264,13 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
             }
         }
         "as a model" - {
-            val fileData    = garbageInjector.manufacturePojo(classOf[FileData])
-            val observable  = ObservableFileData(fileData)
-
             "its properties" - {
+                val fileData    = garbageInjector.manufacturePojo(classOf[FileData])
+
+                fileData.getTrackData.addAll(randomTracks.asJava)
+
+                val observable  = ObservableFileData(fileData)
+
                 "should be identical to those of the cloned data" - {
                     "getFile" in {
                         observable.getFile shouldEqual fileData.getFile
@@ -270,6 +287,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should modify the subordinate sheet" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[FileData])
+                    moreGarbage.getTrackData.addAll(randomTracks.asJava)
 
                     "setFile" in {
                         observable.setFile(moreGarbage.getFile)
@@ -291,6 +309,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should react to mutation" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[FileData])
+                    moreGarbage.getTrackData.addAll(randomTracks.asJava)
 
                     "setFile" in {
                         val waiter  = new Waiter
@@ -310,9 +329,9 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                         observable.setParent(moreGarbage.getParent)
                         waiter.await()
                     }
-                    "getTrackData" in {
+                    "trackDataProperty" in {
                         val waiter  = new Waiter
-                        observable.trackData.onInvalidate { waiter.dismiss() }
+                        observable.trackDataProperty.onInvalidate { waiter.dismiss() }
                         observable.getTrackData.addAll(moreGarbage.getTrackData)
                         waiter.await()
                     }
@@ -346,6 +365,17 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                     }
                 }
             }
+            "its data should affect outcome of operations implemented in the superclass" - {
+                val fileData    = garbageInjector.manufacturePojo(classOf[FileData])
+                val tracks      = randomTracks
+                fileData.getTrackData.addAll(tracks.asJava)
+
+                val observable  = ObservableFileData(fileData)
+
+                "getAllIndices" in {
+                    assert(observable.getAllIndices.containsAll(tracks.flatMap(t => t.getIndices.asScala).asJava))
+                }
+            }
         }
         "as a feature" - {
             val fileData    = garbageInjector.manufacturePojo(classOf[FileData])
@@ -370,9 +400,9 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
         }
         "as a model" - {
             val trackData   = garbageInjector.manufacturePojo(classOf[TrackData])
-            val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index])).asJava
+            val indices = randomIndices.asJava
             trackData.getIndices.addAll(indices)
-            val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+            val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString()).asJavaCollection
             trackData.getFlags.addAll(flags)
             val observable  = ObservableTrackData(trackData)
 
@@ -414,9 +444,9 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should modify the subordinate data" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[TrackData])
-                    val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+                    val indices = randomIndices
                     moreGarbage.getIndices.addAll(indices.asJava)
-                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString()).asJavaCollection
                     moreGarbage.getFlags.addAll(flags)
 
                     "getDataType" in {
@@ -468,9 +498,9 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should react to mutation" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[TrackData])
-                    val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+                    val indices = randomIndices
                     moreGarbage.getIndices.addAll(indices.asJava)
-                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString()).asJavaCollection
                     moreGarbage.getFlags.addAll(flags)
 
                     "getDataType" in {
@@ -542,9 +572,9 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should invalidate the parent" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[TrackData])
-                    val indices = (0 to 10).map(_ => garbageInjector.manufacturePojo(classOf[Index]))
+                    val indices = randomIndices
                     moreGarbage.getIndices.addAll(indices.asJava)
-                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString).asJavaCollection
+                    val flags   = (0 to 10).map(_ => (new Random).alphanumeric.take(6).toString()).asJavaCollection
                     moreGarbage.getFlags.addAll(flags)
 
                     "getDataType" in {
