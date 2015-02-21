@@ -12,6 +12,8 @@ import scalafx.geometry.Insets
 import scalafx.scene.control.{ComboBox, Label, TextField}
 import scalafx.scene.layout.GridPane
 
+import cuelib._
+
 /**
  * Provides the editing view for filedata
  */
@@ -26,10 +28,9 @@ class FileDataView(fileData: FileData) extends GridPane with Editable {
     // File Name -------------------------------------------------------------------------------------------------------
 
     val fileNameLabel   = new Label(t"ui.fd_view.file_name")
-    val fileField       = new TextField {
-        text = fileData.file.orNull
-        text.onChange({fileData.file = Option(text.value)})
-    }
+    val fileField       = new TextField
+
+    fileField.textProperty.bindBidirectional(fileData.fileProperty)
 
     this.addRow(0, fileNameLabel, fileField)
 
@@ -37,11 +38,13 @@ class FileDataView(fileData: FileData) extends GridPane with Editable {
 
     val fileTypeLabel   = new Label(t"ui.fd_view.file_type")
     val typeField       = new ComboBox[String] {
-        this.editable.bind(editableProperty)
         items = ObservableBuffer(FileEntry.FileTypes)
-        value = fileData.fileType.orNull
-        value.onChange({fileData.fileType = Option(value.value)})
     }
+
+    typeField.editable = false
+    editableProperty.onChange { typeField.disable = !editable }
+
+    typeField.valueProperty.bindBidirectional(fileData.fileTypeProperty)
 
     this.addRow(1, fileTypeLabel, typeField)
 
