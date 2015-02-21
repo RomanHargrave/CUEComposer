@@ -44,17 +44,17 @@ final class ObservablePosition extends Position with Observability {
         setFrames(frames)
     }
 
-    override def getFrames: Int = super.getFrames
+    override def getFrames: Int = framesProperty.value
 
-    override def setFrames(frames: Int): Unit = super.setFrames(frames)
+    override def setFrames(frames: Int): Unit = framesProperty.value= frames
 
-    override def getMinutes: Int = super.getMinutes
+    override def getMinutes: Int = minutesProperty.value
 
-    override def setMinutes(minutes: Int): Unit = super.setMinutes(minutes)
+    override def setMinutes(minutes: Int): Unit = minutesProperty.value = minutes
 
-    override def getSeconds: Int = super.getSeconds
+    override def getSeconds: Int = secondsProperty.value
 
-    override def setSeconds(seconds: Int): Unit = super.setSeconds(seconds)
+    override def setSeconds(seconds: Int): Unit = secondsProperty.value = seconds
 
     /**
      * Bind a subordinate position's fields to this implementation's fields and return a subscription to cancel
