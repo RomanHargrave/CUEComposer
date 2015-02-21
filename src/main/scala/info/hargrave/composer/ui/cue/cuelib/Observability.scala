@@ -18,7 +18,7 @@ trait Observability extends Observable with Memoization {
 
     private val property = ObjectProperty(new Object)
 
-    protected final def invalidate(): Unit = property.value = new Object
+    final def invalidate(): Unit = property.value = new Object
 
     /**
      * Decorates SFX observables such that calling invalidatesParent will cause them to call invalidate() on
