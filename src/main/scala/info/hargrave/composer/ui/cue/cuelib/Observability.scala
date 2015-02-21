@@ -1,12 +1,13 @@
 package info.hargrave.composer.ui.cue.cuelib
 
 
-import javafx.beans.{Observable => JFXObservable, InvalidationListener}
+import javafx.beans.{InvalidationListener, Observable => JFXObservable}
 
 import info.hargrave.commons.Memoization
 
 import scalafx.beans.Observable
-import scalafx.beans.property.ObjectProperty
+
+import scala.collection.mutable.{Set => MSet}
 
 /**
  * Provides a simple observability interface with no specific contracts
@@ -16,9 +17,9 @@ import scalafx.beans.property.ObjectProperty
  */
 trait Observability extends Observable with Memoization {
 
-    private val property = ObjectProperty(new Object)
+    private val subscribers = MSet[InvalidationListener]()
 
-    final def invalidate(): Unit = property.value = new Object
+    final def invalidate(): Unit = subscribers.foreach(_.invalidated(this))
 
     /**
      * Decorates SFX observables such that calling invalidatesParent will cause them to call invalidate() on
@@ -29,15 +30,17 @@ trait Observability extends Observable with Memoization {
         def invalidatesParent(): Unit = observable.onInvalidate { invalidate() }
     }
 
-    def delegate: JFXObservable = cache {
-                                            new JFXObservable {
+    override def delegate: JFXObservable = cache {
+                                                     new JFXObservable {
 
-                                                override def removeListener(invalidationListener: InvalidationListener): Unit =
-                                                    property.delegate.removeListener(invalidationListener)
+                                                         override def removeListener(invalidationListener:
+                                                                                     InvalidationListener): Unit =
+                                                             subscribers -= invalidationListener
 
-                                                override def addListener(invalidationListener: InvalidationListener): Unit =
-                                                    property.delegate.addListener(invalidationListener)
-                                            }
-                                        }
+                                                         override def addListener(invalidationListener:
+                                                                                  InvalidationListener): Unit =
+                                                             subscribers += invalidationListener
+                                                     }
+                                                 }
 
 }
