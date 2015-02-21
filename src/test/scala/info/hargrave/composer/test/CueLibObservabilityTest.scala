@@ -2,7 +2,7 @@ package info.hargrave.composer.test
 
 import info.hargrave.composer.ui.cue.cuelib.{ObservableFileData, ObservableCueSheet}
 
-import jwbroek.cuelib.{Index, TrackData, FileData, CueSheet}
+import jwbroek.cuelib._
 
 import org.scalatest._
 import org.scalatest.concurrent.AsyncAssertions
@@ -743,6 +743,82 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
 
             "should provide implicit conversion" in {
                 assert((index: ObservableIndex).isInstanceOf[ObservableIndex])
+            }
+        }
+    }
+    "An Observable Position" - {
+        "as an object" - {
+            val position    = garbageInjector.manufacturePojo(classOf[Position])
+            val observable  = ObservablePosition(position)
+
+            "should be memoized" in {
+                ObservablePosition(position) shouldBe observable
+            }
+
+            "should not allow nested conversion" in {
+                ObservablePosition(observable) shouldBe observable
+            }
+        }
+        "as a model" - {
+            val position    = garbageInjector.manufacturePojo(classOf[Position])
+            val observable  = ObservablePosition(position)
+
+            "should be identical to the cloned position" - {
+                "getFrames" in {
+                    observable.getFrames shouldEqual position.getFrames
+                }
+                "getMinutes" in {
+                    observable.getMinutes shouldEqual position.getMinutes
+                }
+                "getSeconds" in {
+                    observable.getSeconds shouldEqual position.getSeconds
+                }
+            }
+            "should mutate the subordinate data" - {
+                val moreJunk = garbageInjector.manufacturePojo(classOf[Position])
+
+                "setFrames" in {
+                    observable.setFrames(moreJunk.getFrames)
+                    position.getFrames shouldEqual moreJunk.getFrames
+                }
+                "setMinutes" in {
+                    observable.setMinutes(moreJunk.getMinutes)
+                    position.getMinutes shouldEqual moreJunk.getMinutes
+                }
+                "setSeconds" in {
+                    observable.setSeconds(moreJunk.getSeconds)
+                    position.getSeconds shouldEqual moreJunk.getSeconds
+                }
+            }
+            "should react to mutation" - {
+                val moreJunk = garbageInjector.manufacturePojo(classOf[Position])
+
+                "setFrames" in {
+                    val waiter  = new Waiter
+                    observable.onInvalidate({ waiter.dismiss() })
+                    observable.setFrames(moreJunk.getFrames)
+                    waiter.await()
+
+                }
+                "setMinutes" in {
+                    val waiter  = new Waiter
+                    observable.onInvalidate({ waiter.dismiss() })
+                    observable.setMinutes(moreJunk.getMinutes)
+                    waiter.await()
+                }
+                "setSeconds" in {
+                    val waiter  = new Waiter
+                    observable.onInvalidate({ waiter.dismiss() })
+                    observable.setSeconds(moreJunk.getSeconds)
+                    waiter.await()
+                }
+            }
+        }
+        "as a feature" - {
+            val position    = garbageInjector.manufacturePojo(classOf[Position])
+
+            "should provide implicit conversion" in {
+                assert((position: ObservablePosition).isInstanceOf[ObservablePosition])
             }
         }
     }
