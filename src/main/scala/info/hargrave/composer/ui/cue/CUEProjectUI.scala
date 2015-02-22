@@ -17,6 +17,8 @@ import scalafx.scene.layout._
  */
 class CUEProjectUI(project: CUEProject) extends TabPane {
 
+    import info.hargrave.composer.ui.cue.CUESheetMemberTree.CueSheetMember
+
     private def cueSheet: CueSheet = project.cueSheet match {
         case someSheet: Some[CueSheet]  => someSheet.get
         case None => throw new IllegalArgumentException("project has an invalid cuesheet")
@@ -45,7 +47,7 @@ class CUEProjectUI(project: CUEProject) extends TabPane {
 
     elementsEditor.dividers(0).setPosition(.25)
 
-    elementTree.onSelectionChanged {(selection: Option[Either[FileData, TrackData]]) =>
+    elementTree.onSelectionChanged {(selection: Option[CueSheetMember]) =>
         val newChild = selection match {
             case Some(Left(fileData))   => new FileDataView(fileData) {
                 editable = true
