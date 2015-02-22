@@ -12,6 +12,8 @@ import scalafx.stage.Stage
  */
 package object composer extends AnyRef with Localization with PropertyStrings with RegexStrings {
 
+    import scalafx.event.subscriptions.Subscription
+
     /**
      * Provides a general purpose prompts access
      */
@@ -34,4 +36,15 @@ package object composer extends AnyRef with Localization with PropertyStrings wi
     * @return current stage
     */
     implicit def stage: Stage = JFXApp.ACTIVE_APP.stage
+
+    /**
+     * Turns any traversable containing Subscriptions in to a multiplexed subscription.
+     * Because I have too much boilerplate subscription multiplexing.
+     *
+     * @param subs  subscriptions
+     * @return      multiplexed subscription
+     */
+    implicit def multiplexSubscription(subs: Traversable[Subscription]): Subscription = new Subscription {
+        override def cancel(): Unit = subs.foreach(_.cancel())
+    }
 }
