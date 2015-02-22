@@ -47,4 +47,8 @@ package object composer extends AnyRef with Localization with PropertyStrings wi
     implicit def multiplexSubscription(subs: Traversable[Subscription]): Subscription = new Subscription {
         override def cancel(): Unit = subs.foreach(_.cancel())
     }
+
+    implicit class UnaryDecorations(something: AnyRef) {
+        def ? = something != null
+    }
 }
