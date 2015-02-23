@@ -104,6 +104,7 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
      * @return
      */
     def bind(subordinate: TrackData): Subscription = {
+        import javafx.beans.binding.Bindings
         val subscriptions = Set(dataTypeProperty.onChange { subordinate.setDataType(getDataType) },
                                 isrcCodeProperty.onChange { subordinate.setIsrcCode(getIsrcCode) },
                                 numberProperty.onChange { subordinate.setNumber(getNumber) },
@@ -112,27 +113,21 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
                                 pregapProperty.onChange { subordinate.setPregap(getPregap) },
                                 songwriterProperty.onChange { subordinate.setSongwriter(getSongwriter) },
                                 titleProperty.onChange { subordinate.setTitle(getTitle) },
-                                indicesProperty.onChange { subordinate.getIndices.clear(); subordinate.getIndices.addAll(getIndices); () },
                                 parentProperty.onChange { subordinate.setParent(getParent) })
 
-        /*
-         * JFX ObservableSet subscriptions return the listener instead of a subscription, WTF?
-         */
-        val flagsListener = new SetChangeListener[String] {
-            override def onChanged(change: Change[_ <: String]): Unit = {
-                subordinate.getFlags.clear()
-                subordinate.getFlags.addAll(getFlags)
-            }
-        }
-        flagsProperty.delegate.addListener(flagsListener)
+        Bindings.bindContent(subordinate.getIndices, indicesProperty)
+        Bindings.bindContent(subordinate.getFlags, flagsProperty)
 
         new Subscription {
             override def cancel(): Unit = {
                 subscriptions.foreach(_.cancel())
-                flagsProperty.removeListener(flagsListener)
+                Bindings.unbindContent(subordinate.getIndices, indicesProperty)
+                Bindings.unbindContent(subordinate.getFlags, flagsProperty)
             }
         }
     }
+
+    override def toString(): String = s"ObservableTrackData(number=$getNumber, title=$getTitle)"
 }
 
 object ObservableTrackData extends AnyRef with Memoization {
