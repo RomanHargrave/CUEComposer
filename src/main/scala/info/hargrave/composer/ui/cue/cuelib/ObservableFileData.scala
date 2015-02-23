@@ -2,14 +2,13 @@ package info.hargrave.composer.ui.cue.cuelib
 
 import java.util
 
-import info.hargrave.composer._
 import info.hargrave.commons.Memoization
-import jwbroek.cuelib.{TrackData, CueSheet, Index, FileData}
-
-import scalafx.beans.property.{ObjectProperty, StringProperty}
-import scalafx.collections.ObservableBuffer
+import info.hargrave.composer._
+import jwbroek.cuelib.{CueSheet, FileData, TrackData}
 
 import scala.collection.JavaConverters._
+import scalafx.beans.property.{ObjectProperty, StringProperty}
+import scalafx.collections.ObservableBuffer
 import scalafx.event.subscriptions.Subscription
 
 
@@ -20,11 +19,10 @@ import scalafx.event.subscriptions.Subscription
 final class ObservableFileData(parent: CueSheet) extends FileData(parent) with Observability {
 
 
-
-    val fileProperty        = StringProperty(super.getFile)
-    val fileTypeProperty    = StringProperty(super.getFileType)
-    val parentProperty      = ObjectProperty(super.getParent)
-    val trackDataProperty   = ObservableBuffer(super.getTrackData.asScala:_*)
+    val fileProperty      = StringProperty(super.getFile)
+    val fileTypeProperty  = StringProperty(super.getFileType)
+    val parentProperty    = ObjectProperty(super.getParent)
+    val trackDataProperty = ObservableBuffer(super.getTrackData.asScala: _*)
 
     Set(fileProperty, fileTypeProperty, parentProperty, trackDataProperty).foreach(_.invalidatesParent())
 
@@ -65,21 +63,23 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
      * @return binding subscription
      */
     def bind(subordinate: FileData): Subscription = {
+        import javafx.beans.binding.Bindings
+
         val subscriptions = Set(fileProperty.onChange { subordinate.setFile(this.getFile) },
                                 fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) },
-                                parentProperty.onChange { subordinate.setParent(this.getParent) },
-                                trackDataProperty.onChange {
-                                                       subordinate.getTrackData.clear()
-                                                       subordinate.getTrackData.addAll(getTrackData)
-                                                       ()
-                                                   })
+                                parentProperty.onChange { subordinate.setParent(this.getParent) })
 
+        Bindings.bindContent(subordinate.getTrackData, trackDataProperty)
 
         new Subscription {
-            override def cancel(): Unit = subscriptions.foreach(_.cancel())
+            override def cancel(): Unit = {
+                subscriptions.cancel()
+                Bindings.unbindContent(subordinate.getTrackData, trackDataProperty)
+            }
         }
     }
 }
+
 object ObservableFileData extends AnyRef with Memoization {
 
     val fromFileData    = memoize { dataArg: FileData => new ObservableFileData(dataArg) }
@@ -87,7 +87,7 @@ object ObservableFileData extends AnyRef with Memoization {
 
     def apply(sub: FileData): ObservableFileData = sub match {
         case impl: ObservableFileData => impl
-        case normal: FileData =>
+        case normal: FileData         =>
             val wrapper = fromFileData(sub)
             bindSubordinate(wrapper, sub)
             wrapper
