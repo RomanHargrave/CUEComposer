@@ -1,20 +1,22 @@
 package info.hargrave.composer.ui.cue
 
 import info.hargrave.composer._
-import info.hargrave.composer.ui.cue.cuelib._
+import info.hargrave.composer.ui.cue.cuelib.{ObservableFileData, ObservableTrackData, _}
 import info.hargrave.composer.ui.{CustomTreeCell, Editable}
 import info.hargrave.composer.util.CUEUtilities._
-import jwbroek.cuelib.{CueSheet, FileData, TrackData}
+
+import jwbroek.cuelib.{FileData, TrackData}
 
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
-
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer
+import scalafx.collections.ObservableBuffer.{Add, Change, Remove}
 import scalafx.event.subscriptions.Subscription
 import scalafx.scene.Node
 import scalafx.scene.control._
 import scalafx.scene.layout.{Priority, VBox}
+
+import CUESheetMemberTree.CueEntryCell
 
 /**
  * Displays a CUE Sheet as a two-level TreeView[Either[FileData,TrackData]] from which the user can select file
@@ -25,16 +27,14 @@ import scalafx.scene.layout.{Priority, VBox}
  *
  * When editable is true, it will display a toolbar that allows for addition and removal of sheet members.
  */
-class CUESheetMemberTree(sheet: CueSheet) extends VBox with Editable {
+class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
 
-    import info.hargrave.composer.ui.cue.CUESheetMemberTree.CueSheetMember
+    import CUESheetMemberTree.CueSheetMember
 
-    val filesProperty = ObservableBuffer(Seq[FileData]())
+    def fileDataCollection = sheet.fileDataProperty
 
     // Element List ----------------------------------------------------------------------------------------------------
     private val elementsList = new TreeView[CueSheetMember] {
-
-        import info.hargrave.composer.ui.cue.CUESheetMemberTree.CueEntryCell
 
         root = new TreeItem
         showRoot = false
@@ -42,43 +42,57 @@ class CUESheetMemberTree(sheet: CueSheet) extends VBox with Editable {
         vgrow = Priority.Always
     }
 
-    private def synchronizeData(): Unit = {
-
-        /*
-         * For each file entry create an item, then construct a sequence of items for each track entry and assign them
-         * to the file item as children.
-         */
-        elementsList.root.value.children = filesProperty.map(data => {
-            new TreeItem[CueSheetMember](Left(data: ObservableFileData)) {
-                children = data.trackData.map(tData => {
-                    new TreeItem[CueSheetMember](Right(tData: ObservableTrackData))
-                })
-            }
+    fileDataCollection
+        .map(data => new TreeItem[CueSheetMember](Left(data: ObservableFileData)) {
+            children = data.trackData.map(tData => new TreeItem[CueSheetMember](Right(tData: ObservableTrackData)))
         })
-    }
+        .foreach(elementsList.root.value.children.add(_))
 
-    filesProperty.onChange { synchronizeData() }
+    fileDataCollection.onChange((collection: ObservableBuffer[FileData], changes: Seq[Change]) => changes.foreach {
+        case Add(_, elements: Traversable[FileData])    =>
+            elements
+                .map(data => new TreeItem[CueSheetMember](Left(ObservableFileData(data))) {
+                    children = data.getTrackData.map( tData => new TreeItem[CueSheetMember](Right(ObservableTrackData(tData))) )
+                })
+                .foreach(elementsList.root.value.children.add(_))
+        case Remove(_, elements)    =>
+            elementsList.root.value.children
+                .find { child => elements.exists(_.equals(child.value.value.left.get)) }
+                .foreach(elementsList.root.value.children.remove(_))
+        case _                      =>
+    })
 
     // Toolbar ---------------------------------------------------------------------------------------------------------
     private val elementsToolbar = new ToolBar {
         visible.bind(editableProperty)
     }
+
+    /*
+     * 'Add' button allows for the adding of new tracks and files
+     */
     private val addMemberBtn = new MenuButton {
 
         text = t"ui.common.verb_add"
 
+        /*
+         * Add a File to the current sheet.
+         */
         val fileMemberOption = new MenuItem {
 
             text = t"cuesheet.file_entry"
 
             def updateDisabled(): Unit = {
-                disable = filesProperty.length >= 99
+                disable = fileDataCollection.length >= 99
             }
 
-            filesProperty.onChange { updateDisabled() }
-            onAction = () => filesProperty += new FileData(sheet)
+            fileDataCollection.onChange { updateDisabled() }
+            onAction = () => fileDataCollection += new FileData(sheet)
         }
 
+        /*
+         * Add a Track to the currently selected file.
+         * If a track is selected, the new track will be added to the parent, if it exists.
+         */
         val trackMemberOption = new MenuItem {
 
             text = t"cuesheet.track_entry"
@@ -86,45 +100,53 @@ class CUESheetMemberTree(sheet: CueSheet) extends VBox with Editable {
             def updateDisabled(): Unit = {
                 disable = selectedItem match {
                     case Some(Left(fileData)) => fileData.trackData.length >= 99
-                    case Some(Right(_))       => true
                     case _                    => false
                 }
             }
 
             onAction = () => {
-                // get.get.get.get.get.get.get.get.get.get.add(...)
-                // It's enterprise grade!
-                if(selectedItem.get.isLeft) selectedItem.get.left.get.getTrackData.add(new TrackData(selectedItem.get.left.get))
+                logger.trace("called")
+                if (selectedItem.isDefined) {
+                    val selectedFileData = selectedItem match {
+                        case Some(Left(fileData))                 =>
+                            fileData
+                        case Some(Right(tData)) if tData.parent ? =>
+                            tData.parent
+                        case _                                    =>
+                            throw new IllegalStateException(s"Operation cannot be performed on this item")
+                    }
+
+                    selectedFileData.trackData.add(new TrackData(selectedFileData))
+                }
             }
 
-            filesProperty.onChange { updateDisabled() }
-            onSelectionChanged { (ign: Option[CueSheetMember]) => updateDisabled()}
+            fileDataCollection.onChange { updateDisabled() }
+            onSelectionChanged { (ign: Option[CueSheetMember]) => updateDisabled() }
         }
 
         items = Seq(fileMemberOption, trackMemberOption)
     }
+
+    /*
+     * Delete the currently selected member
+     * TODO Needs to be debugged: not working consistently
+     */
     private val delMemberBtn = new Button {
 
         def updateDisabled(): Unit = {
-            disable = selectedItem.isEmpty || filesProperty.isEmpty
+            disable = selectedItem.isEmpty || fileDataCollection.isEmpty
         }
 
-        filesProperty.onChange {
-                                   updateDisabled()
-                               }
-        onSelectionChanged { (ign: Option[CueSheetMember]) => updateDisabled()}
+        fileDataCollection.onChange { updateDisabled() }
+        onSelectionChanged { (ign: Option[CueSheetMember]) => updateDisabled() }
 
         onAction = () => {
             selectedItem match {
                 case Some(Left(fileData))   =>
-                    filesProperty.remove(fileData)
+                    fileDataCollection.remove(fileData)
                 case Some(Right(trackData)) =>
-
-                    trackData.parent.getTrackData.remove(trackData)
-
+                    trackData.parent.trackData.remove(trackData)
                     elementsList.selectionModel.value.select(null)
-
-                    synchronizeData()
                 case None                   => // Nothing
             }
         }
@@ -137,8 +159,6 @@ class CUESheetMemberTree(sheet: CueSheet) extends VBox with Editable {
     // Setup Self ------------------------------------------------------------------------------------------------------
 
     children = Seq[Node](elementsToolbar, elementsList)
-
-    filesProperty.addAll(sheet.fileData)
 
     // Component API ---------------------------------------------------------------------------------------------------
     final def selectedItem = {
@@ -158,32 +178,42 @@ class CUESheetMemberTree(sheet: CueSheet) extends VBox with Editable {
 
 object CUESheetMemberTree {
 
-    import info.hargrave.composer.ui.cue.cuelib.{ObservableFileData, ObservableTrackData}
-    import scalafx.collections.ObservableBuffer.{Change, Add, Remove}
-
-    type CueSheetMember     = Either[ObservableFileData, ObservableTrackData]
+    type CueSheetMember = Either[ObservableFileData, ObservableTrackData]
 
     object CueEntryCell {
 
         import javafx.scene.control.{TreeItem => JTreeItem}
 
         // God this is a dirty kluge
-        private def bindFileDataChildren(fileData: ObservableFileData, children: ObservableBuffer[JTreeItem[CueSheetMember]]): Subscription =
-            fileData.trackDataProperty.onChange {(buffer: ObservableBuffer[TrackData], changes: Seq[Change]) =>
+        // TODO bugfix needed: of course this borks the member tree. what should I have expected?
+        // This code causes intellij IDEA 14.0's Scala formatter to have a massive stroke.
+        // don't hurt intellij IDEA by avoiding the formatter wherever you see anonymous matchers inside brackets,
+        // because it will treat the first `case` statement as a parameter statement, and crap all over the formatting
+        // in strange ways
+        private def bindFileDataChildren(fileData: ObservableFileData,
+                                         children: ObservableBuffer[JTreeItem[CueSheetMember]]): Subscription =
+            fileData.trackDataProperty.onChange { (buffer: ObservableBuffer[TrackData], changes: Seq[Change]) =>
                 changes.foreach {
-                                    case Add(_, added: Traversable[TrackData])      =>
-                                        added.map(n => new JTreeItem[CueSheetMember](Right(n: ObservableTrackData))).foreach(children.add)
+                                    case Add(_, added: Traversable[TrackData]) =>
+                                        added
+                                            .map(n => new JTreeItem[CueSheetMember](Right(n: ObservableTrackData)))
+                                            .foreach(children.add)
                                     case Remove(_, removed: Traversable[TrackData]) =>
-                                        val deadChildren = for(removing <- removed) yield children.filter { child =>
-                                            child.value.value != null && child.value.value == Right(removing: ObservableTrackData)
+                                        val deadChildren = for (removing <- removed) yield {
+                                            children.filter { child =>
+                                                child.value.value != null && child.value.value == Right(removing: ObservableTrackData)
+                                            }
                                         }
 
                                         deadChildren.foreach(children.remove(_))
+
                                     case _ => // Pointless
                                 }
-        }
+            }
     }
+
     final class CueEntryCell extends CustomTreeCell[CueSheetMember] {
+
         import scalafx.Includes._
 
         private var childSubscription: Option[Subscription] = None
@@ -199,28 +229,28 @@ object CUESheetMemberTree {
                 case false =>
                     item match {
                         case Left(fileData)   =>
-
-
-                            childSubscription = Some(Seq(fileData.onInvalidate { text = s"${fileData.getFileType} ${fileData.getFile}" },
-                                                         CueEntryCell.bindFileDataChildren(fileData, treeItem.value.children)))
+                            logger.trace(s"cell $this binding to $fileData")
+                            childSubscription = Some(Seq(fileData.onInvalidate
+                                                         { text = s"${ fileData.getFileType } ${ fileData.getFile }" },
+                                                         CueEntryCell.bindFileDataChildren(fileData,
+                                                                                           treeItem.value.children)))
 
                             fileData.invalidate()
                         case Right(trackData) =>
                             childSubscription =
-                                    Option(trackData.onInvalidate {   text =  if (trackData.getNumber > 0) {
-                                                                                  tf"ui.cue.track_entry"(trackData.getNumber)
-                                                                              } else {
-                                                                                  t"ui.cue.undefined_track"
-                                                                              }
-                                                                  })
-
+                                    Option(trackData.onInvalidate {
+                                        text = if (trackData.getNumber > 0) {
+                                          tf"ui.cue.track_entry"(trackData.getNumber)
+                                        } else {
+                                          t"ui.cue.undefined_track"
+                                        }
+                                    })
 
                             trackData.invalidate()
                     }
             }
         }
     }
-
 
 
 }
