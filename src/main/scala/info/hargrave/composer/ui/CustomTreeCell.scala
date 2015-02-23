@@ -12,7 +12,10 @@ abstract class CustomTreeCell[T] extends TreeCell[T] {
     self =>
 
     override val delegate = new JFXTreeCell[T] {
-        override def updateItem(item: T, empty: Boolean): Unit = self.updateItem(item, empty)
+        override def updateItem(item: T, empty: Boolean): Unit = {
+            self.updateItem(item, empty)
+            super.updateItem(item, empty)
+        }
 
         override def toString: String = s"[CustomTreeCell Anonymous Delegate] ${super.toString}"
     }
