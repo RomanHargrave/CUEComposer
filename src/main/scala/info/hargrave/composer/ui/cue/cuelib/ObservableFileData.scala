@@ -78,6 +78,8 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
             }
         }
     }
+
+    override def toString(): String = s"ObservableFileData(file=$getFile, type=$getFileType)"
 }
 
 object ObservableFileData extends AnyRef with Memoization {
