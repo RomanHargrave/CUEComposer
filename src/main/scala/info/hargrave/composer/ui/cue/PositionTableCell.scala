@@ -39,7 +39,7 @@ object PositionTableCell {
                         println(event)
                         event.code match {
                             case KeyCode.ENTER =>
-                                commitEdit(value)
+                                commitEdit(underlying)
                             case KeyCode.ESCAPE =>
                                 cancelEdit()
                             case _ =>
