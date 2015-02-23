@@ -17,7 +17,9 @@ abstract class CustomTreeCell[T] extends TreeCell[T] {
             super.updateItem(item, empty)
         }
 
-        override def toString: String = s"[CustomTreeCell Anonymous Delegate] ${super.toString}"
+
+
+        override def toString: String = s"[CustomTreeCell] ${super.toString}"
     }
 
     def updateItem(item: T, empty: Boolean): Unit
