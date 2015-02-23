@@ -38,13 +38,17 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
 
         root = new TreeItem
         showRoot = false
-        cellFactory = view => new CueEntryCell
+        cellFactory = view => {
+            logger.trace("Manufacturing new cell")
+            new CueEntryCell
+        }
         vgrow = Priority.Always
     }
 
     fileDataCollection
         .map(data => new TreeItem[CueSheetMember](Left(data: ObservableFileData)) {
             children = data.trackData.map(tData => new TreeItem[CueSheetMember](Right(tData: ObservableTrackData)))
+            CUESheetMemberTree.bindTrackDataToChildren(data, this)
         })
         .foreach(elementsList.root.value.children.add(_))
 
@@ -53,11 +57,12 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
             elements
                 .map(data => new TreeItem[CueSheetMember](Left(ObservableFileData(data))) {
                     children = data.getTrackData.map( tData => new TreeItem[CueSheetMember](Right(ObservableTrackData(tData))) )
+                    CUESheetMemberTree.bindTrackDataToChildren(data, this)
                 })
                 .foreach(elementsList.root.value.children.add(_))
         case Remove(_, elements)    =>
             elementsList.root.value.children
-                .find { child => elements.exists(_.equals(child.value.value.left.get)) }
+                .filter { child => elements.exists(_.equals(child.value.value.left.get)) }
                 .foreach(elementsList.root.value.children.remove(_))
         case _                      =>
     })
@@ -180,41 +185,22 @@ object CUESheetMemberTree {
 
     type CueSheetMember = Either[ObservableFileData, ObservableTrackData]
 
-    object CueEntryCell {
-
-        import javafx.scene.control.{TreeItem => JTreeItem}
-
-        // God this is a dirty kluge
-        // TODO bugfix needed: of course this borks the member tree. what should I have expected?
-        // This code causes intellij IDEA 14.0's Scala formatter to have a massive stroke.
-        // don't hurt intellij IDEA by avoiding the formatter wherever you see anonymous matchers inside brackets,
-        // because it will treat the first `case` statement as a parameter statement, and crap all over the formatting
-        // in strange ways
-        private def bindFileDataChildren(fileData: ObservableFileData,
-                                         children: ObservableBuffer[JTreeItem[CueSheetMember]]): Subscription =
-            fileData.trackDataProperty.onChange { (buffer: ObservableBuffer[TrackData], changes: Seq[Change]) =>
-                changes.foreach {
-                                    case Add(_, added: Traversable[TrackData]) =>
-                                        added
-                                            .map(n => new JTreeItem[CueSheetMember](Right(n: ObservableTrackData)))
-                                            .foreach(children.add)
-                                    case Remove(_, removed: Traversable[TrackData]) =>
-                                        val deadChildren = for (removing <- removed) yield {
-                                            children.filter { child =>
-                                                child.value.value != null && child.value.value == Right(removing: ObservableTrackData)
-                                            }
-                                        }
-
-                                        deadChildren.foreach(children.remove(_))
-
-                                    case _ => // Pointless
-                                }
-            }
-    }
+    private def bindTrackDataToChildren(fileData: ObservableFileData, view: TreeItem[CueSheetMember]): Subscription =
+        fileData.trackDataProperty.onChange((buffer: ObservableBuffer[TrackData], changes: Seq[Change]) =>
+            changes.foreach {
+                                case Add(_, added: Traversable[TrackData]) =>
+                                    added
+                                        .map(n => new TreeItem[CueSheetMember](Right(n: ObservableTrackData)))
+                                        .foreach(view.children.add(_))
+                                case Remove(_, removed) =>
+                                    view.children
+                                        .filter(child=> removed.exists(_.equals(child)))
+                                        .foreach(view.children.remove(_))
+                                case _ => // Pointless
+                            }
+    )
 
     final class CueEntryCell extends CustomTreeCell[CueSheetMember] {
-
-        import scalafx.Includes._
 
         private var childSubscription: Option[Subscription] = None
 
@@ -229,11 +215,7 @@ object CUESheetMemberTree {
                 case false =>
                     item match {
                         case Left(fileData)   =>
-                            logger.trace(s"cell $this binding to $fileData")
-                            childSubscription = Some(Seq(fileData.onInvalidate
-                                                         { text = s"${ fileData.getFileType } ${ fileData.getFile }" },
-                                                         CueEntryCell.bindFileDataChildren(fileData,
-                                                                                           treeItem.value.children)))
+                            childSubscription = Some(fileData.onInvalidate { text = s"${ fileData.getFileType } ${ fileData.getFile }" })
 
                             fileData.invalidate()
                         case Right(trackData) =>
