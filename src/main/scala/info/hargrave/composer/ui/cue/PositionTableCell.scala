@@ -4,6 +4,7 @@ import javafx.scene.control.{TableCell => JFXTableCell}
 
 import info.hargrave.composer.ui.cue.PositionTableCell.JFXImpl
 import info.hargrave.composer.util.CUEUtilities._
+import info.hargrave.composer.ui.cue.cuelib._
 import jwbroek.cuelib.Position
 
 import scalafx.Includes._
@@ -49,8 +50,6 @@ object PositionTableCell {
 
                 positionView.get.editableProperty.bind(editableProperty())
             }
-
-            positionView.get.value = position.get
 
             setText(null)
             setGraphic(positionView.get)
