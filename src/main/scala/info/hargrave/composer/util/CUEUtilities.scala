@@ -174,12 +174,7 @@ trait CUEUtilities {
         def fileType = Option(data.getFileType)
         def fileType_=(name: Option[String]) = data.setFileType(name.orNull)
 
-        def trackData: Seq[TrackData] = data.getTrackData
-        def trackData_=(newData: Seq[TrackData]) = {
-            data.getTrackData.clear()
-            data.getTrackData.addAll(newData)
-        }
-
+        def trackData: MutableSeq[TrackData] = data.getTrackData
 
         def parent = data.getParent
         def parent_=(sheet: CueSheet) = data.setParent(sheet)
@@ -232,7 +227,7 @@ trait CUEUtilities {
 
         def index(num: Int) = Option(data.getIndex(num))
 
-        def indices: Seq[Index] = data.getIndices
+        def indices: MutableSeq[Index] = data.getIndices
         def indices_=(seq: Seq[Index]): Unit = {
             data.getIndices.clear()
             data.getIndices.addAll(seq)
