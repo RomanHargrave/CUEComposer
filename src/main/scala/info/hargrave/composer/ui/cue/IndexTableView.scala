@@ -134,7 +134,7 @@ class IndexTableView private() extends VBox with Editable {
 
         indices.onChange { disable = indices.size >= 99 }
         onAction = () => {
-            indices += new ObservableIndex(largestIndex, new ObservablePosition)
+            indices += new ObservableIndex(largestIndex + 1, new ObservablePosition)
         }
     }
     private val btnRemIndex = new Button(t"ui.common.verb_remove") {
