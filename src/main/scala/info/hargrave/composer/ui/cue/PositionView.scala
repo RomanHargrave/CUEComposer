@@ -73,3 +73,13 @@ class PositionView(val underlying: ObservablePosition) extends HBox with Editabl
     final def frames_=(int: Int) = framesProperty.value = int
 
 }
+object PositionView {
+
+    /**
+     * Create a copy of `position` instead of using that position as the underlying position
+     * This is used in scenarios such as table-cell editing, where the view must be edited without side-effects
+     *
+     * @param position position to copy from
+     */
+    def copyFrom(position: Position): PositionView = new PositionView(position.getMinutes, position.getSeconds, position.getFrames)
+}
