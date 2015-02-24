@@ -4,7 +4,6 @@ import javafx.scene.control.{TableCell => JFXTableCell}
 
 import info.hargrave.composer.ui.cue.PositionTableCell.JFXImpl
 import info.hargrave.composer.util.CUEUtilities._
-import info.hargrave.composer.ui.cue.cuelib._
 import jwbroek.cuelib.Position
 
 import scalafx.Includes._
@@ -18,6 +17,8 @@ import scalafx.scene.input.{KeyCode, KeyEvent}
 class PositionTableCell[S](override val delegate: JFXImpl[S] = new JFXImpl[S])
         extends TableCell[S, Position] with SFXDelegate[JFXImpl[S]]
 object PositionTableCell {
+
+    private val ZeroPosition = new Position(0, 0, 0)
 
     /**
      * Custom delegate class that provides the implementation of startEdit, cancelEdit, and updateItem
@@ -34,21 +35,19 @@ object PositionTableCell {
             super.startEdit()
 
             if(positionView.isEmpty) {
-                positionView = Some(new PositionView(position.get) {
-                    onKeyReleased = { (event: KeyEvent) =>
-                        println(event)
-                        event.code match {
-                            case KeyCode.ENTER =>
-                                commitEdit(underlying)
-                            case KeyCode.ESCAPE =>
-                                cancelEdit()
-                            case _ =>
-                        }
+                positionView = Some(PositionView.copyFrom(position.get))
 
+                positionView.get.onKeyReleased = { (event: KeyEvent) =>
+                    event.code match {
+                        case KeyCode.ENTER =>
+                            commitEdit(positionView.get.underlying)
+                        case KeyCode.ESCAPE =>
+                            cancelEdit()
+                        case _ =>
                     }
-                })
+                }
 
-                positionView.get.editableProperty.bind(editableProperty())
+                positionView.get.editableProperty.bind(editableProperty)
             }
 
             setText(null)
@@ -57,7 +56,7 @@ object PositionTableCell {
 
         override def cancelEdit(): Unit = {
             setGraphic(null)
-            setText(position.getOrElse(new Position).formatted)
+            setText(position.getOrElse(ZeroPosition).formatted)
             super.cancelEdit()
         }
 
