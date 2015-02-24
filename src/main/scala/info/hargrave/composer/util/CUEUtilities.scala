@@ -176,6 +176,19 @@ trait CUEUtilities {
 
         def trackData: MutableSeq[TrackData] = data.getTrackData
 
+        def lastTrack: Option[TrackData] = if(trackData.isEmpty) {
+            None
+        } else {
+            Option(trackData
+                    .sortWith(_.number.getOrElse(0) < _.number.getOrElse(0))
+                    .last)
+        }
+
+        def lastTrackNumber: Option[Int] = lastTrack match {
+            case Some(track)    => track.number
+            case None           => None
+        }
+
         def parent = data.getParent
         def parent_=(sheet: CueSheet) = data.setParent(sheet)
     }
