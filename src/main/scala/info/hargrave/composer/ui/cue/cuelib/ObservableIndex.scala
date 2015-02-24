@@ -66,6 +66,11 @@ final class ObservableIndex extends Index with Observability {
             override def cancel(): Unit = subscribers.foreach(_.cancel())
         }
     }
+
+    override def equals(ref: Any): Boolean = ref match {
+        case native: Index => native.getNumber == getNumber && native.getPosition == getPosition
+        case _ => super.equals(ref)
+    }
 }
 object ObservableIndex extends AnyRef with Memoization {
 

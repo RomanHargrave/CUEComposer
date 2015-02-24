@@ -43,6 +43,10 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
             "should not allow for nested conversion" in {
                 ObservableCueSheet(observable) should be(observable)
             }
+
+            "should be have field equality to the subordinate" in {
+                observable should equal(cueSheet)
+            }
         }
         "as a model" - {
             val cueSheet    = garbageInjector.manufacturePojo(classOf[CueSheet])
@@ -262,6 +266,10 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
             "should not allow for nested conversion" in {
                 ObservableFileData(observable) should be(observable)
             }
+
+            "should be have field equality to the subordinate" in {
+                observable should equal(fileData)
+            }
         }
         "as a model" - {
             "its properties" - {
@@ -396,6 +404,10 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
 
             "should not allow for nested conversion" in {
                 ObservableTrackData(observable) should be(observable)
+            }
+
+            "should be have field equality to the subordinate" in {
+                observable should equal(trackData)
             }
         }
         "as a model" - {
@@ -680,6 +692,10 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
             "should not allow nested conversion" in {
                 ObservableIndex(observable) should be(observable)
             }
+
+            "should be have field equality to the subordinate" in {
+                observable should equal(index)
+            }
         }
         "as a model" - {
             val index       = garbageInjector.manufacturePojo(classOf[Index])
@@ -757,6 +773,10 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
 
             "should not allow nested conversion" in {
                 ObservablePosition(observable) shouldBe observable
+            }
+
+            "should be have field equality to the subordinate" in {
+                observable should equal(position)
             }
         }
         "as a model" - {

@@ -72,6 +72,14 @@ final class ObservablePosition extends Position with Observability {
             override def cancel(): Unit = subscriptions.foreach(_.cancel())
         }
     }
+
+    override def equals(ref: Any): Boolean = ref match {
+        case native: Position =>
+            native.getMinutes == getMinutes &&
+                native.getSeconds == getSeconds &&
+                native.getFrames == getFrames
+        case _ => super.equals(ref)
+    }
 }
 object ObservablePosition extends AnyRef with Memoization {
 

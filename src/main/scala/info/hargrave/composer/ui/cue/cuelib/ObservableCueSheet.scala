@@ -122,6 +122,21 @@ class ObservableCueSheet extends CueSheet with Observability {
     }
 
     override def toString(): String = s"ObservableCueSheet(comment=$getComment, fileData=$getFileData)"
+
+    override def equals(ref: Any): Boolean = ref match {
+        case native: CueSheet =>
+            native.getFileData.containsAll(getFileData) &&
+                native.getCatalog == getCatalog &&
+                native.getCdTextFile == getCdTextFile &&
+                native.getPerformer == getPerformer &&
+                native.getSongwriter == getSongwriter &&
+                native.getTitle == getTitle &&
+                native.getDiscid == getDiscid &&
+                native.getGenre == getGenre &&
+                native.getYear == getYear &&
+                native.getComment == getComment
+        case _ => super.equals(ref)
+    }
 }
 object ObservableCueSheet extends AnyRef with Memoization {
 

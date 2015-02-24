@@ -128,6 +128,22 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
     }
 
     override def toString(): String = s"ObservableTrackData(number=$getNumber, title=$getTitle)"
+
+    override def equals(ref: Any): Boolean = ref match {
+        case native: TrackData =>
+            native.getDataType == getDataType &&
+                native.getIsrcCode == getIsrcCode &&
+                native.getNumber == getNumber &&
+                native.getPerformer == getPerformer &&
+                native.getPostgap == getPostgap &&
+                native.getPregap == getPregap &&
+                native.getSongwriter == getSongwriter &&
+                native.getTitle == getTitle &&
+                native.getIndices.containsAll(getIndices) &&
+                native.getFlags.containsAll(getFlags) &&
+                native.getParent == getParent
+        case _ => super.equals(ref)
+    }
 }
 
 object ObservableTrackData extends AnyRef with Memoization {

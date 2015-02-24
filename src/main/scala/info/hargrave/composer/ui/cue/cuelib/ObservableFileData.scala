@@ -80,6 +80,16 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
     }
 
     override def toString(): String = s"ObservableFileData(file=$getFile, type=$getFileType)"
+
+    override def equals(ref: Any): Boolean = ref match {
+        case native: FileData =>
+            native.getFile == getFile &&
+                native.getFileType == getFileType &&
+                native.getParent == getParent &&
+                native.getAllIndices.containsAll(getAllIndices) &&
+                native.getTrackData.containsAll(getTrackData)
+        case _ => super.equals(ref)
+    }
 }
 
 object ObservableFileData extends AnyRef with Memoization {
