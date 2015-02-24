@@ -5,8 +5,8 @@ import javafx.scene.control.{CheckMenuItem => JFXCheckMenuItem}
 
 import info.hargrave.composer._
 import info.hargrave.composer.ui.Editable
+import info.hargrave.composer.ui.cue.cuelib.ObservableTrackData
 import info.hargrave.composer.util.CUEUtilities._
-import jwbroek.cuelib.{Position, TrackData}
 
 import scala.collection.JavaConverters._
 import scalafx.Includes._
@@ -18,7 +18,11 @@ import scalafx.scene.layout.{GridPane, Priority, VBox}
  * Date: 2/3/15
  * Time: 11:25 AM
  */
-class TrackDataView(trackData: TrackData) extends SplitPane with Editable {
+class TrackDataView(trackData: ObservableTrackData) extends SplitPane with Editable {
+
+    import javafx.beans.binding.Bindings
+
+    import info.hargrave.composer.ui.cue.cuelib.ObservablePosition
 
     // Metadata Editor -------------------------------------------------------------------------------------------------
 
@@ -46,8 +50,8 @@ class TrackDataView(trackData: TrackData) extends SplitPane with Editable {
         editable    = true
         vgrow       = Priority.Always
 
-        indices.onChange { trackData.indices = indices }
     }
+    Bindings.bindContentBidirectional(indexView.indices, trackData.indicesProperty)
 
     rightPane.children.add(indexView)
 
@@ -82,25 +86,21 @@ class TrackDataView(trackData: TrackData) extends SplitPane with Editable {
         synchronizeItems()
     }
 
-    private val pregapPosition  = new PositionView(trackData.pregap.getOrElse(new Position)) {
-        minutesProperty.onChange { if(trackData.pregap.isDefined) trackData.pregap.get.minutes = Option(minutes) }
-        secondsProperty.onChange { if(trackData.pregap.isDefined) trackData.pregap.get.seconds = Option(seconds) }
-        framesProperty.onChange { if(trackData.pregap.isDefined) trackData.pregap.get.frames = Option(frames) }
-    }
+
+    private val pregapPosition  = new PositionView(trackData.pregap.getOrElse(new ObservablePosition()))
     private val pregapCheck     = new CheckBox(t"ui.td_view.pregap") {
         selected = trackData.pregap.isDefined
-        selected.onChange { trackData.pregap = if(selected.value) Option(pregapPosition.value) else None }
+        trackData.pregapProperty.onChange { selected = trackData.pregap.isDefined }
+        selected.onChange { trackData.pregap = if(selected.value) Option(pregapPosition.underlying) else None }
         pregapPosition.editableProperty.bind(selected)
     }
 
-    private val postgapPosition = new PositionView(trackData.postgap.getOrElse(new Position)) {
-        minutesProperty.onChange { if(trackData.postgap.isDefined) trackData.postgap.get.minutes = Option(minutes) }
-        secondsProperty.onChange { if(trackData.postgap.isDefined) trackData.postgap.get.seconds = Option(seconds) }
-        framesProperty.onChange { if(trackData.postgap.isDefined) trackData.postgap.get.frames = Option(frames) }
-    }
+    private val postgapPosition = new PositionView(trackData.postgap.getOrElse(new ObservablePosition))
     private val postgapCheck    = new CheckBox(t"ui.td_view.postgap") {
+
         selected = trackData.postgap.isDefined
-        selected.onChange { trackData.postgap = if(selected.value) Option(postgapPosition.value) else None }
+        trackData.postgapProperty.onChange { selected = trackData.postgap.isDefined }
+        selected.onChange { trackData.postgap = if (selected.value) Option(postgapPosition.underlying) else None }
         postgapPosition.editableProperty.bind(selected)
     }
 
