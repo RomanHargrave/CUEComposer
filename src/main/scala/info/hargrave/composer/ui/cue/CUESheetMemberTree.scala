@@ -38,10 +38,7 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
 
         root = new TreeItem
         showRoot = false
-        cellFactory = view => {
-            logger.trace("Manufacturing new cell")
-            new CueEntryCell
-        }
+        cellFactory = view => new CueEntryCell
         vgrow = Priority.Always
     }
 
@@ -61,9 +58,9 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
                 })
                 .foreach(elementsList.root.value.children.add(_))
         case Remove(_, elements)    =>
-            elementsList.root.value.children
-                .filter { child => elements.exists(_.equals(child.value.value.left.get)) }
-                .foreach(elementsList.root.value.children.remove(_))
+            elements
+                .flatMap(el => elementsList.root.value.children.filter(i=> i.value.value.left.get == el))
+                .foreach(elementsList.root.value.children.-=)
         case _                      =>
     })
 
@@ -91,7 +88,7 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
             }
 
             fileDataCollection.onChange { updateDisabled() }
-            onAction = () => fileDataCollection += new FileData(sheet)
+            onAction = () => fileDataCollection += new ObservableFileData(sheet)
         }
 
         /*
@@ -110,7 +107,6 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
             }
 
             onAction = () => {
-                logger.trace("called")
                 if (selectedItem.isDefined) {
                     val selectedFileData = selectedItem match {
                         case Some(Left(fileData))                 =>
@@ -148,15 +144,16 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
         onAction = () => {
             selectedItem match {
                 case Some(Left(fileData))   =>
-                    fileDataCollection.remove(fileData)
+                    fileDataCollection -= fileData
                 case Some(Right(trackData)) =>
-                    trackData.parent.trackData.remove(trackData)
-                    elementsList.selectionModel.value.select(null)
-                case None                   => // Nothing
+                    ObservableFileData(trackData.parent).getTrackData.remove(trackData)
+                case _ =>
             }
         }
 
         text = t"ui.common.verb_remove"
+
+        updateDisabled()
     }
 
     elementsToolbar.items = Seq(addMemberBtn, delMemberBtn)
@@ -186,19 +183,20 @@ object CUESheetMemberTree {
     type CueSheetMember = Either[ObservableFileData, ObservableTrackData]
 
     private def bindTrackDataToChildren(fileData: ObservableFileData, view: TreeItem[CueSheetMember]): Subscription =
-        fileData.trackDataProperty.onChange((buffer: ObservableBuffer[TrackData], changes: Seq[Change]) =>
+        fileData.trackDataProperty.onChange({ (buffer: ObservableBuffer[TrackData], changes: Seq[Change]) =>
+
             changes.foreach {
                                 case Add(_, added: Traversable[TrackData]) =>
                                     added
-                                        .map(n => new TreeItem[CueSheetMember](Right(n: ObservableTrackData)))
-                                        .foreach(view.children.add(_))
+                                    .map(n => new TreeItem[CueSheetMember](Right(ObservableTrackData(n))))
+                                    .foreach(view.children.add(_))
                                 case Remove(_, removed) =>
-                                    view.children
-                                        .filter(child=> removed.exists(_.equals(child)))
-                                        .foreach(view.children.remove(_))
+                                    removed
+                                    .flatMap(child => view.children.filter(i => i.value.value.right.get == child))
+                                    .foreach(view.children.-=)
                                 case _ => // Pointless
                             }
-    )
+    })
 
     final class CueEntryCell extends CustomTreeCell[CueSheetMember] {
 
