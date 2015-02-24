@@ -199,7 +199,11 @@ sealed trait CUEUtilities {
          * though the filetype field can be anything so long as the cue parser
          * supports that file type
          */
-        val FileTypes = Seq("BINARY", "MOTOROLA", "AIFF", "WAV", "MP3")
+        val FileTypes = Seq("BINARY",   // Anything
+                            "MOTOROLA", // Proprietary
+                            "AIFF",     // AIFF Audio
+                            "WAVE",     // Any audio data that is not AIFF or MP3, usually
+                            "MP3")      // MP3 Audio
     }
 
     /**
