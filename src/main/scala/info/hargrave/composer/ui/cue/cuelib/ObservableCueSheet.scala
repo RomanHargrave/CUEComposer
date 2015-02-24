@@ -119,6 +119,7 @@ class ObservableCueSheet extends CueSheet with Observability {
     override def toString(): String = s"ObservableCueSheet(comment=$getComment, fileData=$getFileData)"
 
     override def equals(ref: Any): Boolean = ref match {
+        case self: CueSheet if self eq this => true
         case native: CueSheet =>
             native.getFileData.containsAll(getFileData) &&
                 native.getCatalog == getCatalog &&

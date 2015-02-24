@@ -130,6 +130,7 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
     override def toString(): String = s"ObservableTrackData(number=$getNumber, title=$getTitle)"
 
     override def equals(ref: Any): Boolean = ref match {
+        case self: TrackData if self eq this => true
         case native: TrackData =>
             native.getDataType == getDataType &&
                 native.getIsrcCode == getIsrcCode &&

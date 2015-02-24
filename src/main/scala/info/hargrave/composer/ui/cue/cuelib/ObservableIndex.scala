@@ -66,6 +66,7 @@ final class ObservableIndex extends Index with Observability {
     }
 
     override def equals(ref: Any): Boolean = ref match {
+        case self: Index if self eq this => true
         case native: Index => native.getNumber == getNumber && native.getPosition == getPosition
         case _ => super.equals(ref)
     }

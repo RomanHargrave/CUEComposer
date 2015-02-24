@@ -75,6 +75,7 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
     override def toString(): String = s"ObservableFileData(file=$getFile, type=$getFileType)"
 
     override def equals(ref: Any): Boolean = ref match {
+        case self: FileData if self eq this => true
         case native: FileData =>
             native.getFile == getFile &&
                 native.getFileType == getFileType &&

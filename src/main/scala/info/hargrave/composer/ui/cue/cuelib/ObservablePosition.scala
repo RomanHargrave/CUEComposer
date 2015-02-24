@@ -72,6 +72,7 @@ final class ObservablePosition extends Position with Observability {
     }
 
     override def equals(ref: Any): Boolean = ref match {
+        case self: Position if self eq this => true
         case native: Position =>
             native.getMinutes == getMinutes &&
                 native.getSeconds == getSeconds &&
