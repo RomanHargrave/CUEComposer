@@ -2,14 +2,12 @@ package info.hargrave.composer.util
 
 import scala.collection.JavaConversions._
 
-import info.hargrave.composer._
-
 import jwbroek.cuelib._
 import CueSheet.{MetaDataField => md}
 
-import scala.collection.mutable.{Seq => MutableSeq, Set => MutableSet}
+import scala.collection.mutable.{Seq => MutableSeq}
 
-trait CUEUtilities {
+sealed trait CUEUtilities extends AnyRef with Localization {
 
     private implicit def optStr2OptInt(optStr: Option[String]): Option[Int] = optStr match {
         case Some(str)  => Some(str.toInt)
