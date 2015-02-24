@@ -1,6 +1,8 @@
 package info.hargrave.composer.ui.cue.cuelib
 
 import info.hargrave.commons.Memoization
+import info.hargrave.composer.multiplexSubscription
+
 import jwbroek.cuelib.Position
 
 import scalafx.beans.property.IntegerProperty
@@ -64,13 +66,9 @@ final class ObservablePosition extends Position with Observability {
      * @return binding subscription
      */
     def bind(subordinate: Position): Subscription = {
-        val subscriptions = Set(minutesProperty.onChange { subordinate.setMinutes(getMinutes) },
-                                secondsProperty.onChange { subordinate.setSeconds(getSeconds) },
-                                framesProperty.onChange  { subordinate.setFrames(getFrames) })
-
-        new Subscription {
-            override def cancel(): Unit = subscriptions.foreach(_.cancel())
-        }
+        Set(minutesProperty.onChange { subordinate.setMinutes(getMinutes) },
+            secondsProperty.onChange { subordinate.setSeconds(getSeconds) },
+            framesProperty.onChange { subordinate.setFrames(getFrames) })
     }
 
     override def equals(ref: Any): Boolean = ref match {

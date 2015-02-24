@@ -63,20 +63,13 @@ final class ObservableFileData(parent: CueSheet) extends FileData(parent) with O
      * @return binding subscription
      */
     def bind(subordinate: FileData): Subscription = {
-        import javafx.beans.binding.Bindings
 
-        val subscriptions = Set(fileProperty.onChange { subordinate.setFile(this.getFile) },
-                                fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) },
-                                parentProperty.onChange { subordinate.setParent(this.getParent) })
+        import info.hargrave.commons.javafx.SafeListBinding
 
-        Bindings.bindContent(subordinate.getTrackData, trackDataProperty)
-
-        new Subscription {
-            override def cancel(): Unit = {
-                subscriptions.cancel()
-                Bindings.unbindContent(subordinate.getTrackData, trackDataProperty)
-            }
-        }
+        Set(fileProperty.onChange { subordinate.setFile(this.getFile) },
+            fileTypeProperty.onChange { subordinate.setFileType(this.getFileType) },
+            parentProperty.onChange { subordinate.setParent(this.getParent) },
+            SafeListBinding(subordinate.getTrackData, trackDataProperty))
     }
 
     override def toString(): String = s"ObservableFileData(file=$getFile, type=$getFileType)"

@@ -4,6 +4,8 @@ package info.hargrave.composer.ui.cue.cuelib
 import java.util
 
 import info.hargrave.commons.Memoization
+import info.hargrave.composer.multiplexSubscription
+
 import jwbroek.cuelib.{FileData, CueSheet}
 
 import scalafx.beans.property.{IntegerProperty, StringProperty}
@@ -99,26 +101,19 @@ class ObservableCueSheet extends CueSheet with Observability {
      * @return binding subscription
      */
     def bind(subordinate: CueSheet): Subscription = {
-        import javafx.beans.binding.Bindings
-        val subscriptions   = Set(catalogProperty.onInvalidate { subordinate.setCatalog(getCatalog) },
-                                  cdtFileProperty.onInvalidate { subordinate.setCdTextFile(getCdTextFile) },
-                                  performerProperty.onInvalidate { subordinate.setPerformer(getPerformer) },
-                                  songwriterProperty.onInvalidate { subordinate.setSongwriter(getSongwriter) },
-                                  titleProperty.onInvalidate { subordinate.setTitle(getTitle) },
-                                  discIdProperty.onInvalidate { subordinate.setDiscid(getDiscid) },
-                                  genreProperty.onInvalidate {subordinate.setGenre(getGenre) },
-                                  yearProperty.onInvalidate { subordinate.setYear(getYear) },
-                                  commentProperty.onInvalidate { subordinate.setComment(getComment)})
 
-        Bindings.bindContent(subordinate.getFileData, fileDataProperty)
+        import info.hargrave.commons.javafx.SafeListBinding
 
-        new Subscription {
-            override def cancel(): Unit = {
-                subscriptions.foreach(_.cancel())
-
-                Bindings.unbindContent(subordinate.getFileData, fileDataProperty)
-            }
-        }
+        Set(catalogProperty.onInvalidate { subordinate.setCatalog(getCatalog) },
+            cdtFileProperty.onInvalidate { subordinate.setCdTextFile(getCdTextFile) },
+            performerProperty.onInvalidate { subordinate.setPerformer(getPerformer) },
+            songwriterProperty.onInvalidate { subordinate.setSongwriter(getSongwriter) },
+            titleProperty.onInvalidate { subordinate.setTitle(getTitle) },
+            discIdProperty.onInvalidate { subordinate.setDiscid(getDiscid) },
+            genreProperty.onInvalidate { subordinate.setGenre(getGenre) },
+            yearProperty.onInvalidate { subordinate.setYear(getYear) },
+            commentProperty.onInvalidate { subordinate.setComment(getComment) },
+            SafeListBinding(subordinate.getFileData, fileDataProperty))
     }
 
     override def toString(): String = s"ObservableCueSheet(comment=$getComment, fileData=$getFileData)"

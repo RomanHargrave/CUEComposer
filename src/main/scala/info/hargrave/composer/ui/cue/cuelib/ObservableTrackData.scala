@@ -1,10 +1,9 @@
 package info.hargrave.composer.ui.cue.cuelib
 
 import java.util
-import javafx.collections.SetChangeListener
-import javafx.collections.SetChangeListener.Change
 
 import info.hargrave.commons.Memoization
+
 import jwbroek.cuelib.{Position, Index, TrackData, FileData}
 
 import scalafx.beans.property.{IntegerProperty, StringProperty, ObjectProperty}
@@ -105,6 +104,8 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
      */
     def bind(subordinate: TrackData): Subscription = {
         import javafx.beans.binding.Bindings
+
+        import info.hargrave.commons.javafx.SafeListBinding
         val subscriptions = Set(dataTypeProperty.onChange { subordinate.setDataType(getDataType) },
                                 isrcCodeProperty.onChange { subordinate.setIsrcCode(getIsrcCode) },
                                 numberProperty.onChange { subordinate.setNumber(getNumber) },
@@ -113,15 +114,14 @@ final class ObservableTrackData(parent: FileData) extends TrackData(parent) with
                                 pregapProperty.onChange { subordinate.setPregap(getPregap) },
                                 songwriterProperty.onChange { subordinate.setSongwriter(getSongwriter) },
                                 titleProperty.onChange { subordinate.setTitle(getTitle) },
-                                parentProperty.onChange { subordinate.setParent(getParent) })
+                                parentProperty.onChange { subordinate.setParent(getParent) },
+                                SafeListBinding(subordinate.getIndices, indicesProperty))
 
-        Bindings.bindContent(subordinate.getIndices, indicesProperty)
         Bindings.bindContent(subordinate.getFlags, flagsProperty)
 
         new Subscription {
             override def cancel(): Unit = {
                 subscriptions.foreach(_.cancel())
-                Bindings.unbindContent(subordinate.getIndices, indicesProperty)
                 Bindings.unbindContent(subordinate.getFlags, flagsProperty)
             }
         }

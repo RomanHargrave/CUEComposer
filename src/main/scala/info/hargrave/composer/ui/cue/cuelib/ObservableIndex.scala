@@ -1,6 +1,8 @@
 package info.hargrave.composer.ui.cue.cuelib
 
 import info.hargrave.commons.Memoization
+import info.hargrave.composer.multiplexSubscription
+
 import jwbroek.cuelib.{Position, Index}
 
 import scalafx.beans.property.{ObjectProperty, IntegerProperty}
@@ -59,12 +61,8 @@ final class ObservableIndex extends Index with Observability {
      * @return binding subscription
      */
     def bind(subordinate: Index): Subscription =  {
-        val subscribers = Set(numberProperty.onChange   { subordinate.setNumber(getNumber) },
-                              positionProperty.onChange { subordinate.setPosition(getPosition) })
-
-        new Subscription {
-            override def cancel(): Unit = subscribers.foreach(_.cancel())
-        }
+        Set(numberProperty.onChange { subordinate.setNumber(getNumber) },
+            positionProperty.onChange { subordinate.setPosition(getPosition) })
     }
 
     override def equals(ref: Any): Boolean = ref match {
