@@ -117,7 +117,9 @@ class CUESheetMemberTree(sheet: ObservableCueSheet) extends VBox with Editable {
                             throw new IllegalStateException(s"Operation cannot be performed on this item")
                     }
 
-                    selectedFileData.trackData.add(new TrackData(selectedFileData))
+                    val newData = new ObservableTrackData(selectedFileData)
+                    newData.setNumber(selectedFileData.lastTrackNumber.getOrElse(0) + 1)
+                    selectedFileData.trackData.add(newData)
                 }
             }
 
