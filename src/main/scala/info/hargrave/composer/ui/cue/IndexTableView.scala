@@ -4,6 +4,9 @@ import info.hargrave.composer._
 import info.hargrave.composer.ui.PromptInterface.PromptType
 import info.hargrave.composer.ui.{Editable, NumberSpinnerCell}
 import info.hargrave.composer.util.CUEUtilities._
+import info.hargrave.composer.ui.cue.cuelib.ObservableIndex
+import info.hargrave.composer.ui.cue.cuelib.ObservablePosition
+
 import jwbroek.cuelib.{Index, Position}
 
 import scalafx.Includes._
@@ -17,17 +20,21 @@ import scalafx.scene.layout.{Priority, VBox}
  * Provides a TableView implementation for viewing editing lists of indices ([[jwbroek.cuelib.Index]])
  */
 class IndexTableView private() extends VBox with Editable {
-    
-    val indices = ObservableBuffer[Index](Seq())
-    
-    def this(initialIndices: Seq[Index]) = {
+
+
+    val indices = ObservableBuffer.empty[Index]
+
+    def this(initialIndices: Traversable[Index]) = {
         this()
-        
+
         indices ++= initialIndices
     }
 
     // TableView setup -------------------------------------------------------------------------------------------------
 
+    /*
+     * Creates the left-most cell that represents the Index ID.
+     */
     private val numberCellFactory   = {(col: TableColumn[Index, Number]) =>
         new NumberSpinnerCell[Index] {
             editable.bind(editableProperty)
@@ -36,9 +43,17 @@ class IndexTableView private() extends VBox with Editable {
             minWidth.bind(col.minWidth)
         }
     }
+
+    /*
+     * Converter hack that works around both NumberSpinner and CueLib behaviour
+     */
     private val numberValueFactory  = {(col: CellDataFeatures[Index, Number]) =>
         ObjectProperty[Number](col.value.number.getOrElse[Int](0))
     }
+
+    /*
+     * Left-most column that contains the Index ID data
+     */
     private val indexNumberColumn   = new TableColumn[Index, Number] {
         text                = t"ui.common.noun_number"
         cellFactory         = numberCellFactory
@@ -46,6 +61,7 @@ class IndexTableView private() extends VBox with Editable {
         minWidth            = 80
         editable.bind(editableProperty)
     }
+
     indexNumberColumn.onEditCommit  = {(event: CellEditEvent[Index, Number]) =>
         if(indices.exists(_.number == Option(event.newValue))){
             event.consume()
@@ -56,15 +72,28 @@ class IndexTableView private() extends VBox with Editable {
         }
     }
 
+    /*
+     * Cell factory which creates the right-most cell containing the position view
+     */
     private val positionCellFactory = {(col: TableColumn[Index, Position]) =>
+
         new PositionTableCell[Index] {
             editable.bind(editableProperty)
             minWidth.bind(col.minWidth)
         }
     }
     private val positionValFactory  = {(col: CellDataFeatures[Index, Position]) =>
-        ObjectProperty(col.value.position.getOrElse(new Position()))
+
+        /*
+         * Unguarded `get`, as the index should have a `position` assigned to it.
+         * If it does not, then it did not originate from the CUESheet, or was not added in a sane fashion.
+         */
+        ObjectProperty[Position](ObservablePosition(col.value.position.get))
     }
+
+    /*
+     * Right-most columns containing position data
+     */
     private val indexPositionColumn = new TableColumn[Index, Position] {
         text                = t"ui.common.noun_position"
         cellFactory         = positionCellFactory
@@ -72,16 +101,27 @@ class IndexTableView private() extends VBox with Editable {
         minWidth            = 200
         editable.bind(editableProperty)
     }
-    indexPositionColumn.onEditCommit    = {(event: CellEditEvent[Index, Position]) =>
-        event.rowValue.position = Option(event.newValue)
+
+    indexPositionColumn.onEditCommit = {(event: CellEditEvent[Index, Position]) =>
+        event.rowValue.getPosition.setMinutes(event.newValue.getMinutes)
+        event.rowValue.getPosition.setSeconds(event.newValue.getSeconds)
+        event.rowValue.getPosition.setFrames(event.newValue.getFrames)
     }
 
+    /*
+     * Table which holds both columns
+     */
     private val indexView = new TableView[Index] {
         editable.bind(editableProperty)
         vgrow = Priority.Always
     }
 
     indexView.columns ++= Seq(indexNumberColumn, indexPositionColumn)
+
+    /*
+     * Assigned such that `indexView.items` holds a reference to `indices`, and not a copy thereof.
+     * As such, the displayed indices are bound to `indices`
+     */
     indexView.items = indices
 
     // Toolbar Setup ---------------------------------------------------------------------------------------------------
@@ -89,11 +129,12 @@ class IndexTableView private() extends VBox with Editable {
     private val toolbar     = new ToolBar {
         visible.bind(editableProperty)
     }
+
     private val btnAddIndex = new Button(t"ui.common.verb_add") {
 
         indices.onChange { disable = indices.size >= 99 }
         onAction = () => {
-            indices += new Index(largestIndex, new Position())
+            indices += new ObservableIndex(largestIndex, new ObservablePosition)
         }
     }
     private val btnRemIndex = new Button(t"ui.common.verb_remove") {
@@ -105,7 +146,7 @@ class IndexTableView private() extends VBox with Editable {
         indices.onChange { updateDisableState() } // Minimum 1 index per track
         indexView.selectionModel.value.selectedItems.onChange { updateDisableState() }
 
-        onAction = () => indexView.selectionModel.value.selectedItems.foreach(indices.remove(_))
+        onAction = () => indexView.selectionModel.value.selectedItems.foreach(indices.-=)
     }
 
     toolbar.items = Seq(btnAddIndex, btnRemIndex)
