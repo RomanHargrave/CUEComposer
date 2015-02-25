@@ -1,4 +1,4 @@
-language: scala
+language: java
 
 script: ./gradlew test --info
 
