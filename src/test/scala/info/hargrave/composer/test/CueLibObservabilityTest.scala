@@ -186,6 +186,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should invalidate the sheet" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[CueSheet])
+                    moreGarbage.getFileData.addAll(randomFiles.asJava)
 
                     "setCatalog" in {
                         val waiter      = new Waiter
@@ -346,6 +347,7 @@ class CueLibObservabilityTest extends FreeSpec with Matchers with AsyncAssertion
                 }
                 "should invalidate the parent" - {
                     val moreGarbage = garbageInjector.manufacturePojo(classOf[FileData])
+                    moreGarbage.getTrackData.addAll(randomTracks.asJava)
 
                     "setFile" in {
                         val waiter  = new Waiter
