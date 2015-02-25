@@ -14,13 +14,11 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'eu.appsatori',        name: 'gradle-fatjar-plugin',   version: '0.3'
         classpath group: 'com.github.maiflai',  name: 'gradle-scalatest',       version: '0.6-5-g9065d91'
     }
 }
 
 apply plugin: 'com.github.maiflai.scalatest'
-apply plugin: 'eu.appsatori.fatjar'
 
 repositories {
     mavenCentral()
@@ -66,11 +64,6 @@ processResources {
     }
 }
 
-fatJarPrepareFiles {
-    exclude 'rootdoc.txt'
-    exclude 'library.properties'
-}
-
 jfxCopyLibs.enabled = false
 
 jar{
@@ -89,6 +82,18 @@ javafx {
     appID       'CUEComposer'
     appName     'CUE Composer'
     mainClass   'info.hargrave.composer.ComposerLauncher'
+
+    jvmArgs     = ["-Dprism.order=j2d"]
+
+    profiles {
+        windows {
+            appID = "86403aca-a190-4cc4-a429-b58180d09e2e"
+        }
+
+        macosx {
+            id = "info.hargrave.composer"
+        }
+    }
 
     category    = 'Audio'
     copyright   = 'Copyleft © 2014 Roman Hargrave'
