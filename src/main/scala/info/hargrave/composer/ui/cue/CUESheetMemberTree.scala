@@ -215,16 +215,26 @@ object CUESheetMemberTree {
                 case false =>
                     item match {
                         case Left(fileData)   =>
-                            childSubscription = Some(fileData.onInvalidate { text = s"${ fileData.getFileType } ${ fileData.getFile }" })
+                            childSubscription =
+                                    Some(fileData.onInvalidate {
+                                           text = if (fileData.fileType.isEmpty &&
+                                                      fileData.file.isEmpty) {
+                                               t"ui.cue.undefined_file_entry"
+                                           } else {
+                                               tf"ui.cue.file_entry"(fileData.fileType.getOrElse(t"ui.common.concept_none"),
+                                                                     fileData.file.getOrElse(t"ui.common.concept_none"))
+                                           }
+                                    })
 
                             fileData.invalidate()
                         case Right(trackData) =>
                             childSubscription =
                                     Option(trackData.onInvalidate {
-                                        text = if (trackData.getNumber > 0) {
-                                          tf"ui.cue.track_entry"(trackData.getNumber)
+                                        text = if (trackData.number.isEmpty && trackData.title.isEmpty) {
+                                            t"ui.cue.undefined_track"
                                         } else {
-                                          t"ui.cue.undefined_track"
+                                            tf"ui.cue.track_entry"(trackData.number.getOrElse(t"ui.common.concept_none"),
+                                                                   trackData.title.getOrElse(t"ui.common.concept_none"))
                                         }
                                     })
 
